@@ -41,8 +41,11 @@ export function AdminLayout() {
   const warnRef     = useRef<ReturnType<typeof setTimeout> | null>(null);
   const countRef    = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Close drawer on route change
-  useEffect(() => { setDrawerOpen(false); }, [location.pathname]);
+  // Close drawer and scroll to top on route change
+  useEffect(() => { 
+    setDrawerOpen(false); 
+    document.querySelector('main')?.scrollTo(0, 0);
+  }, [location.pathname]);
 
   const handleLogout = useCallback(async (reason?: string) => {
     if (reason) console.info("[Security] Auto-logout:", reason);
