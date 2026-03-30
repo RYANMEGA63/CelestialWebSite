@@ -19,6 +19,15 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileMenuOpen]);
+
   const isActive = (path: string) => location.pathname === path;
 
   const navLinks = [
@@ -46,13 +55,14 @@ export function Header() {
   const CurrentIcon = currentThemeIcon();
 
   return (
-    <header 
-      className={`sticky top-0 z-[100] w-full transition-all duration-300 ${
-        scrolled 
-          ? "py-2 bg-background/80 backdrop-blur-2xl border-b border-border/50 shadow-sm shadow-black/5" 
-          : "py-4 bg-transparent border-b border-transparent"
-      }`}
-    >
+    <>
+      <header 
+        className={`sticky top-0 z-[100] w-full transition-all duration-300 ${
+          scrolled 
+            ? "py-2 bg-background/80 backdrop-blur-2xl border-b border-border/50 shadow-sm shadow-black/5" 
+            : "py-4 bg-transparent border-b border-transparent"
+        }`}
+      >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 lg:px-8">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group relative z-10">
@@ -155,6 +165,7 @@ export function Header() {
           </button>
         </div>
       </nav>
+      </header>
 
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
@@ -198,7 +209,7 @@ export function Header() {
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+    </>
   );
 }
 
