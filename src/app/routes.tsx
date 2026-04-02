@@ -27,6 +27,12 @@ import { AdminLegal } from "./pages/admin/AdminLegal";
 import { AdminMessages } from "./pages/admin/AdminMessages";
 import { AdminCommandes } from "./pages/admin/AdminCommandes";
 import { MesCommandes } from "./pages/MesCommandes";
+import { DbLayout } from "./pages/db/DbLayout";
+import { DbLogin } from "./pages/db/DbLogin";
+import { DbUsersPage } from "./pages/db/DbUsersPage";
+import { DbWorkspacesPage } from "./pages/db/DbWorkspacesPage";
+import { DbWorkspaceView } from "./pages/db/DbWorkspaceView";
+import { DbAdminDatabasePage } from "./pages/db/DbAdminDatabasePage";
 
 export const router = createBrowserRouter([
   {
@@ -65,5 +71,18 @@ export const router = createBrowserRouter([
       { path: "messages", Component: AdminMessages },
     ]
   },
-  { path: "/celestial-cms/login", Component: Login }
+  { path: "/celestial-cms/login", Component: Login },
+
+  // ── DB Manager — isolated section, hidden from main site ──
+  { path: "/celestial-db/login", Component: DbLogin },
+  {
+    path: "/celestial-db",
+    Component: DbLayout,
+    children: [
+      { index: true, Component: DbUsersPage },
+      { path: "workspaces", Component: DbWorkspacesPage },
+      { path: "workspace/:id", Component: DbWorkspaceView },
+      { path: "database", Component: DbAdminDatabasePage },
+    ],
+  },
 ]);

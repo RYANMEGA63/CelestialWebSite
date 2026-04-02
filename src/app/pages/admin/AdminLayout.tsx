@@ -4,7 +4,7 @@ import { supabase } from "../../../lib/supabase";
 import { 
   BarChart3, BookOpen, RefreshCcw, Tag, Briefcase, LogOut, Settings,
   Home, UserRound, Scale, ShoppingCart, MessageSquare, ShieldCheck,
-  Clock, AlertTriangle, X, Menu,
+  Clock, AlertTriangle, X, Menu, Database, ArrowRight, Globe
 } from "lucide-react";
 import { ThemeProvider } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
@@ -131,6 +131,13 @@ export function AdminLayout() {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-border shrink-0">
+        <Link
+          to="/"
+          className="flex items-center gap-3 px-3 py-2 mb-4 w-full rounded-xl text-left border border-border bg-muted/20 hover:bg-muted text-muted-foreground hover:text-foreground transition-all text-xs font-bold"
+        >
+          <Globe className="w-3.5 h-3.5" />
+          <span>Site principal</span>
+        </Link>
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-base font-black tracking-tight flex items-center gap-2">
             <Settings className="w-4 h-4 text-primary" />
@@ -180,6 +187,20 @@ export function AdminLayout() {
           );
         })}
       </nav>
+
+      {/* Modules externes */}
+      <div className="p-3 border-t border-border shrink-0">
+        <Link
+          to="/celestial-db"
+          className="flex items-center justify-between px-3 py-2.5 w-full rounded-xl text-left hover:bg-primary/10 text-primary transition-colors text-sm font-black"
+        >
+          <div className="flex items-center gap-3">
+            <Database className="w-4 h-4" />
+            <span>Celestial DB</span>
+          </div>
+          <ArrowRight className="w-3.5 h-3.5 opacity-50" />
+        </Link>
+      </div>
 
       {/* Logout */}
       <div className="p-3 border-t border-border shrink-0">

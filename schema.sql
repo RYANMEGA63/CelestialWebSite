@@ -133,3 +133,89 @@ CREATE POLICY "Allow all to authenticated" ON changelog_entries FOR ALL TO authe
 CREATE POLICY "Allow all to authenticated" ON changelog_items FOR ALL TO authenticated USING (true);
 CREATE POLICY "Allow all to authenticated" ON pricing_offers FOR ALL TO authenticated USING (true);
 CREATE POLICY "Allow all to authenticated" ON portfolio_projects FOR ALL TO authenticated USING (true);
+
+-- ==========================================
+-- CELESTIAL DB MANAGER (Multi-Tenant)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS workspaces (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  name TEXT NOT NULL,
+  description TEXT,
+  color TEXT DEFAULT '#7c3aed',
+  emoji TEXT DEFAULT '🏢',
+  image_url TEXT,
+  company_id TEXT,
+  features_messaging BOOLEAN DEFAULT true,
+  features_database BOOLEAN DEFAULT true,
+  allowed_tables JSONB DEFAULT '[]'::jsonb
+);
+
+CREATE TABLE IF NOT EXISTS workspace_members (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID REFERENCES workspaces(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL,
+  user_email TEXT NOT NULL,
+  role TEXT DEFAULT 'viewer',
+  can_send_messages BOOLEAN DEFAULT false,
+  can_view_database BOOLEAN DEFAULT true,
+  can_manage_members BOOLEAN DEFAULT false,
+  UNIQUE(workspace_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS workspace_roles (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID REFERENCES workspaces(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  can_send_messages BOOLEAN DEFAULT false,
+  can_view_database BOOLEAN DEFAULT false,
+  can_manage_members BOOLEAN DEFAULT false,
+  UNIQUE(workspace_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  workspace_id UUID REFERENCES workspaces(id) ON DELETE CASCADE,
+  sender_id UUID NOT NULL,
+  sender_email TEXT NOT NULL,
+  content TEXT NOT NULL
+);
+
+
+-- FUNCTION to list all tables dynamically for Admin Workspace config
+CREATE OR REPLACE FUNCTION get_all_tables()
+RETURNS TABLE(table_name TEXT) 
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT t.table_name::TEXT
+  FROM information_schema.tables t
+  WHERE t.table_schema = 'public' AND t.table_type = 'BASE TABLE';
+END;
+$$;
+
+
+-- FUNCTION to securely check if a column exists in a given table
+CREATE OR REPLACE FUNCTION has_column(target_table TEXT, target_column TEXT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  col_exists BOOLEAN;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1 
+    FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = target_table 
+      AND column_name = target_column
+  ) INTO col_exists;
+  
+  RETURN col_exists;
+END;
+$$;
