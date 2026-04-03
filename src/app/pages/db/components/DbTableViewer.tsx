@@ -57,42 +57,40 @@ export function DbTableViewer({ allowedTables, companyId }: { allowedTables: str
   }
 
   return (
-    <div className="h-full flex flex-col md:flex-row gap-4 overflow-hidden p-1 shadow-inner bg-background/50 rounded-2xl">
-      {/* Sidebar: Table List & Search */}
-      <aside className="w-full md:w-64 flex flex-col bg-card border border-border rounded-xl overflow-hidden shrink-0">
-        <div className="p-3 border-b border-border bg-muted/30">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <input 
-              type="text"
-              placeholder="Rechercher une table..."
-              value={tableSearch}
-              onChange={(e) => setTableSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-background border border-input rounded-lg outline-none focus:ring-1 focus:ring-primary transition-all"
-            />
-          </div>
+    <div className="h-full flex flex-col gap-3 overflow-hidden p-1 shadow-inner bg-background/50 rounded-2xl">
+      {/* Top Navbar: Table List & Search */}
+      <nav className="w-full flex flex-col sm:flex-row items-center gap-3 p-3 bg-card border border-border rounded-xl shrink-0">
+        <div className="relative w-full sm:w-64 shrink-0">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
+          <input 
+            type="text"
+            placeholder="Chercher une table..."
+            value={tableSearch}
+            onChange={(e) => setTableSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 text-xs font-medium bg-muted/30 border border-input rounded-xl outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/60"
+          />
         </div>
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+        <div className="flex-1 w-full overflow-x-auto flex gap-2 custom-scrollbar pb-1">
           {filteredTables.length === 0 ? (
-            <p className="text-[10px] text-center text-muted-foreground py-4">Aucune table trouvée</p>
+            <p className="text-xs text-muted-foreground py-2 px-2 whitespace-nowrap">Aucune table trouvée</p>
           ) : (
             filteredTables.map((t) => (
               <button
                 key={t}
                 onClick={() => setActiveTable(t)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold transition-all group ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all shrink-0 whitespace-nowrap border ${
                   activeTable === t 
-                    ? "bg-primary/10 text-primary border border-primary/20" 
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground border border-transparent"
+                    ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20" 
+                    : "bg-background text-muted-foreground hover:bg-muted border-border hover:border-border/80"
                 }`}
               >
-                <Table2 className={`w-3.5 h-3.5 ${activeTable === t ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`} />
-                <span className="truncate">{t}</span>
+                <Table2 className="w-3.5 h-3.5" />
+                {t}
               </button>
             ))
           )}
         </div>
-      </aside>
+      </nav>
 
       {/* Main Content: Data Table */}
       <div className="flex-1 flex flex-col min-w-0 bg-card border border-border rounded-xl overflow-hidden shadow-sm relative">
@@ -142,7 +140,7 @@ export function DbTableViewer({ allowedTables, companyId }: { allowedTables: str
                         else val = String(val ?? "—");
 
                         return (
-                          <td key={col} className="px-4 py-2.5 text-foreground/80 max-w-[300px] truncate" title={val}>
+                          <td key={col} className="px-4 py-2.5 text-foreground/80 max-w-full" title={val}>
                             {val}
                           </td>
                         );

@@ -3,7 +3,7 @@ import { Outlet, useNavigate, useLocation, Link } from "react-router";
 import {
   Database, LogOut, Users, ShieldCheck, Clock, Layers,
   AlertTriangle, X, ChevronRight, Settings, Ban, MessageSquare,
-  Sun, Moon, Globe
+  Sun, Moon, Globe, Menu
 } from "lucide-react";
 import { DbAuthProvider, useDbAuth } from "./DbContext";
 import { supabaseDbAdmin } from "../../../lib/supabaseDb";
@@ -57,6 +57,7 @@ function DbLayoutInner() {
 
   const [userWorkspaces,  setUserWorkspaces]  = useState<UserWorkspace[] | null>(null);
   const [wsLoading,       setWsLoading]       = useState(false);
+  const [showMobileNav,   setShowMobileNav]   = useState(false);
 
   const isWorkspaceView = location.pathname.startsWith("/celestial-db/workspace/");
 
@@ -294,12 +295,15 @@ function DbLayoutInner() {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="flex items-center gap-3 px-6 py-4 border-b border-border bg-card/30 shrink-0">
-          <div className="flex items-center gap-2 text-muted-foreground text-xs font-semibold">
-            <Database className="w-3.5 h-3.5" />
-            <span>DB Manager</span>
-            <ChevronRight className="w-3 h-3" />
-            <span className="text-foreground">{breadcrumb}</span>
+        <header className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-border bg-card/30 shrink-0">
+          <button onClick={() => setShowMobileNav(true)} className="lg:hidden p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-all">
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2 text-muted-foreground text-xs font-semibold min-w-0 flex-1">
+            <Database className="w-3.5 h-3.5 shrink-0 hidden sm:block" />
+            <span className="hidden sm:inline">DB Manager</span>
+            <ChevronRight className="w-3 h-3 shrink-0 hidden sm:block" />
+            <span className="text-foreground truncate">{breadcrumb}</span>
           </div>
           <div className="ml-auto flex items-center gap-3">
             <button 
@@ -324,12 +328,60 @@ function DbLayoutInner() {
               <Outlet context={{ isDark, setIsDark }} />
             </div>
           ) : (
-            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col">
               <Outlet />
             </div>
           )}
         </main>
       </div>
+
+      {/* Mobile Navigation Overlay */}
+      {showMobileNav && (
+        <div className="fixed inset-0 z-50 flex lg:hidden bg-background/80 backdrop-blur-sm">
+          <div className="w-64 max-w-[80vw] h-full bg-card border-r border-border shadow-2xl flex flex-col">
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/20">
+                  <Database className="w-4 h-4 text-primary-foreground" />
+                </div>
+                <h2 className="font-black text-sm">DB Manager</h2>
+              </div>
+              <button onClick={() => setShowMobileNav(false)} className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-all">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+              <div className="mb-4">
+                <p className="px-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Admin Panel</p>
+                {adminNav.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Link key={item.path} to={item.path} onClick={() => setShowMobileNav(false)}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm mb-1 ${
+                        isActive
+                          ? "bg-gradient-to-r from-primary/20 to-secondary/10 text-foreground border border-primary/20 font-semibold"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                    >
+                      <item.icon className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{item.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </nav>
+            <div className="p-4 border-t border-border">
+               <Link to="/" className="flex items-center justify-center gap-2 w-full py-2 mb-3 rounded-xl bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-xs font-semibold border border-transparent hover:border-border">
+                 <Globe className="w-3.5 h-3.5" /> Site principal
+               </Link>
+               <button onClick={logout} className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-destructive hover:bg-destructive/10 transition-all text-sm font-semibold border border-destructive/20 bg-destructive/5">
+                 <LogOut className="w-4 h-4" /> Déconnexion
+               </button>
+            </div>
+          </div>
+          <div className="flex-1" onClick={() => setShowMobileNav(false)} />
+        </div>
+      )}
     </div>
   );
 }
