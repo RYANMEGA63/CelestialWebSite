@@ -92,7 +92,7 @@ export function MesCommandes() {
           </motion.div>
         ) : (
           <div className="space-y-8">
-            <div className="flex justify-between items-center bg-muted/30 p-6 rounded-3xl border border-border">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-muted/30 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-border">
               <div>
                 <h2 className="text-xl font-bold">Commandes pour <span className="text-primary">{email}</span></h2>
                 <p className="text-sm text-muted-foreground">{orders.length} projet{orders.length > 1 ? "s" : ""} trouvé{orders.length > 1 ? "s" : ""}</p>
@@ -122,8 +122,8 @@ export function MesCommandes() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1 }}
                       >
-                        <Card className="hover:border-primary/30 transition-all rounded-3xl border-border/50 group overflow-hidden">
-                          <CardHeader className="flex flex-row justify-between items-start bg-muted/10 p-8 border-b border-border/30">
+                        <Card className="hover:border-primary/30 transition-all rounded-2xl sm:rounded-3xl border-border/50 group overflow-hidden">
+                          <CardHeader className="flex flex-col sm:flex-row justify-between items-start bg-muted/10 p-5 sm:p-8 border-b border-border/30 gap-4">
                             <div>
                               <div className="flex items-center gap-3 mb-2">
                                 <span className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${status.color}`}>
@@ -140,7 +140,7 @@ export function MesCommandes() {
                               <span className="font-bold text-lg">{order.total_price}</span>
                             </div>
                           </CardHeader>
-                          <CardContent className="p-8 space-y-6">
+                          <CardContent className="p-5 sm:p-8 space-y-6">
                             {order.selected_services && order.selected_services.length > 0 && (
                               <div className="space-y-3">
                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Options incluses :</p>

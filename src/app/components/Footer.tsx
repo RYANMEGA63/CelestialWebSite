@@ -61,7 +61,7 @@ export function Footer() {
   const activeSocials = SOCIAL_KEYS.filter(s => settings[s.key]);
 
   return (
-    <footer className="border-t border-border/20 bg-background pt-24 pb-12 relative overflow-hidden">
+    <footer className="border-t border-border/20 bg-background pt-12 sm:pt-24 pb-8 sm:pb-12 relative overflow-hidden">
       {/* Background Glow */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-64 bg-primary/5 blur-[120px] pointer-events-none" />
       
@@ -184,7 +184,7 @@ export function Footer() {
         </div>
 
         {/* Legal */}
-        <div className="mt-24 pt-12 border-t border-border/20 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div className="mt-12 sm:mt-24 pt-8 sm:pt-12 border-t border-border/20 flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-8">
           <p className="text-xs font-bold text-muted-foreground/40 uppercase tracking-widest">
             © {currentYear} Celestial Systems. All rights reserved.
           </p>

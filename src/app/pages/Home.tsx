@@ -201,7 +201,7 @@ function HomeContent() {
             </div>
 
             {/* Simple Stats Bar */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-12 max-w-4xl mx-auto border-t border-border/20 pt-16">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-12 max-w-4xl mx-auto border-t border-border/20 pt-10 md:pt-16">
               {stats.map((stat, index) => (
                 <div key={index} className="text-center group cursor-default">
                   <div className="text-3xl font-black tracking-tighter mb-2 group-hover:text-primary transition-colors">
@@ -220,7 +220,7 @@ function HomeContent() {
       {/* Features Grid */}
       <section className="py-24 lg:py-40 relative">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="text-center mb-32 relative z-10">
+          <div className="text-center mb-16 md:mb-32 relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -302,7 +302,7 @@ function HomeContent() {
                       </div>
                       <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 shrink-0">Celestial Core v2.0</div>
                    </div>
-                   <div className="p-8 font-mono text-sm leading-relaxed overflow-x-auto text-muted-foreground bg-[#020202]">
+                   <div className="p-4 sm:p-8 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto text-muted-foreground bg-[#020202]">
                       <div className="mb-2"><span className="text-primary font-bold">program</span> Celestial_Excellence;</div>
                       <div className="mb-2 text-muted-foreground/30"><span className="text-accent underline">uses</span> SysUtils, Network, Security;</div>
                       <br />
@@ -350,18 +350,18 @@ function HomeContent() {
       {/* New Feed / Changelog Mini-Section */}
       <section className="py-16 lg:py-24 bg-background">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-16 border-l-4 border-primary pl-10">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 sm:mb-16 border-l-4 border-primary pl-6 sm:pl-10 gap-4">
             <div>
-              <h2 className="text-4xl font-black tracking-tight mb-2">Pulsations.</h2>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-2">Pulsations.</h2>
               <p className="text-muted-foreground uppercase text-xs font-black tracking-widest opacity-60">L'évolution constante de Celestial</p>
             </div>
-            <Link to="/changelog" className="text-xs font-black uppercase tracking-widest text-primary hover:tracking-[.2em] transition-all flex items-center gap-3">
+            <Link to="/changelog" className="text-xs font-black uppercase tracking-widest text-primary hover:tracking-[.2em] transition-all flex items-center gap-3 shrink-0">
               Voir tout
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             {recentChanges.map((change, index) => (
               <motion.div
                 key={index}
@@ -385,7 +385,7 @@ function HomeContent() {
       </section>
 
       {/* Monumental CTA */}
-      <section className="py-32 lg:py-60 relative overflow-hidden">
+      <section className="py-20 sm:py-32 lg:py-60 relative overflow-hidden">
         <div className="absolute inset-0 bg-primary/5" />
         <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-primary/30 to-transparent" />
         
@@ -395,18 +395,18 @@ function HomeContent() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-5xl sm:text-6xl lg:text-8xl font-black mb-12 tracking-tighter">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black mb-8 sm:mb-12 tracking-tighter">
               Vivez l'expérience <br className="hidden sm:block" /> <span className="text-primary italic">Celestial.</span>
             </h2>
             <p className="text-xl text-muted-foreground/80 mb-16 max-w-2xl mx-auto font-medium">
               Rejoignez les entreprises qui ont choisi le futur. <br />
               Parlons de votre prochaine révolution numérique.
             </p>
-            <div className="flex flex-wrap gap-6 justify-center">
-              <Button href="/contact" size="lg" className="px-16 py-6 text-lg font-black rounded-3xl">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-6 justify-center">
+              <Button href="/contact" size="lg" className="px-10 sm:px-16 py-5 sm:py-6 text-base sm:text-lg font-black rounded-3xl">
                 Lancer la Phase 1
               </Button>
-              <Button href="/offres" variant="outline" size="lg" className="px-16 py-6 text-lg font-black rounded-3xl border-border/50">
+              <Button href="/offres" variant="outline" size="lg" className="px-10 sm:px-16 py-5 sm:py-6 text-base sm:text-lg font-black rounded-3xl border-border/50">
                 Voir les Plans
               </Button>
             </div>

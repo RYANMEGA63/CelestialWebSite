@@ -89,7 +89,7 @@ export function APropos() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-8">
               L'Héritage Celestial
             </div>
-            <h1 className="text-6xl sm:text-7xl font-black mb-8 tracking-tighter">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-8 tracking-tighter">
               Bâtir le futur de <br /> <span className="text-primary italic">l'intelligence logicielle.</span>
             </h1>
             <p className="text-xl text-muted-foreground/80 max-w-2xl mx-auto font-medium leading-relaxed">
@@ -101,7 +101,7 @@ export function APropos() {
 
       <div className="mx-auto max-w-7xl px-4 py-32 sm:px-6 lg:px-8">
         {/* Story Section */}
-        <div className="grid lg:grid-cols-2 gap-24 items-center mb-40">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center mb-20 lg:mb-40">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -152,7 +152,7 @@ export function APropos() {
         </div>
 
         {/* Horizontal Timeline Section */}
-        <div className="mb-40 py-24 relative">
+        <div className="mb-20 lg:mb-40 py-12 lg:py-24 relative">
           <div className="absolute top-1/2 left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/20 to-transparent -translate-y-1/2" />
           
           <div className="flex justify-between items-end mb-12 relative z-20">
@@ -219,7 +219,7 @@ export function APropos() {
         </div>
 
         {/* Values Section */}
-        <div className="mb-40">
+        <div className="mb-20 lg:mb-40">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -257,15 +257,15 @@ export function APropos() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
         >
-          <Card className="bg-primary/5 border-primary/20 p-20 text-center relative overflow-hidden group">
+          <Card className="bg-primary/5 border-primary/20 p-8 sm:p-12 lg:p-20 text-center relative overflow-hidden group">
             <div className="absolute inset-0 bg-linear-to-tr from-primary/10 to-transparent pointer-events-none" />
             <div className="relative z-10">
-              <h2 className="text-4xl font-black mb-8 tracking-tighter">Devenez le prochain succès Celestial.</h2>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-8 tracking-tighter">Devenez le prochain succès Celestial.</h2>
               <p className="text-lg text-muted-foreground/80 mb-12 max-w-2xl mx-auto font-medium">
                 Que vous soyez une startup audacieuse ou un groupe industriel établi, nous avons la clé de votre performance numérique.
               </p>
-              <div className="flex justify-center gap-6">
-                <Button href="/contact" size="lg" className="px-12 py-6 text-base font-black uppercase tracking-widest">
+              <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
+                <Button href="/contact" size="lg" className="px-8 sm:px-12 py-5 sm:py-6 text-sm sm:text-base font-black uppercase tracking-widest">
                   Parlez à un jour
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>

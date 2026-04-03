@@ -141,7 +141,7 @@ export function Contact() {
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-5xl md:text-7xl font-black mb-8 leading-tight tracking-tight"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black mb-6 sm:mb-8 leading-tight tracking-tight"
             >
               Donnez vie à vos <span className="text-primary italic">idées</span> digitales.
             </motion.h1>
@@ -228,12 +228,12 @@ export function Contact() {
               )}
             </motion.div>
 
-            <div className="flex items-center justify-between p-6 bg-muted/30 rounded-3xl border border-border/50">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 sm:p-6 bg-muted/30 rounded-2xl sm:rounded-3xl border border-border/50">
               <div className="flex items-center gap-3">
                 <Share2 className="w-5 h-5 text-secondary" />
                 <span className="text-sm font-bold">Suivez notre aventure</span>
               </div>
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-3">
                  {[
                     { icon: <Facebook className="w-4 h-4" />, href: settings['social_facebook'] },
                     { icon: <Instagram className="w-4 h-4" />, href: settings['social_instagram'] },

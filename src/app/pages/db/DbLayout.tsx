@@ -198,11 +198,11 @@ function DbLayoutInner() {
     );
   }
 
-  // ── Non-admin in workspace ──────────
-  if (!user?.isAdmin && isWorkspaceView) {
+  // ── Immersive Workspace View (Both roles) ─────────
+  if (isWorkspaceView) {
     return (
       <div className="h-screen bg-background flex flex-col overflow-hidden transition-colors duration-300">
-        {showWarning && <InactivityBanner countdown={countdown} resetTimer={resetTimer} />}
+        {!user?.isAdmin && showWarning && <InactivityBanner countdown={countdown} resetTimer={resetTimer} />}
         <div className="flex-1 overflow-hidden">
           <Outlet context={{ isDark, setIsDark }} />
         </div>

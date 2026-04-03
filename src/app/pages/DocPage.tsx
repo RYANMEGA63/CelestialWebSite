@@ -189,7 +189,7 @@ export function DocPage({ doc, categoryLabel, onBack, prevDoc, nextDoc, embedded
              animate={{ opacity: 1, y: 0 }}
              className="mb-16"
            >
-             <div className="flex items-center justify-between mb-6">
+             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
                 {!embedded && (
                 <button 
                   onClick={onBack}
@@ -199,7 +199,7 @@ export function DocPage({ doc, categoryLabel, onBack, prevDoc, nextDoc, embedded
                   Documentation
                 </button>
                 )}
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {/* Hide images toggle */}
                   <button
                     onClick={() => setHideImages(h => !h)}
@@ -214,7 +214,7 @@ export function DocPage({ doc, categoryLabel, onBack, prevDoc, nextDoc, embedded
                     {hideImages ? "Images" : "Masquer"}
                   </button>
                   {/* Media size */}
-                  <div className="flex items-center gap-1 bg-muted/30 p-1 rounded-xl border border-border/40">
+                  <div className="hidden sm:flex items-center gap-1 bg-muted/30 p-1 rounded-xl border border-border/40">
                      {['xs', 'sm', 'md', 'lg'].map(s => (
                        <button 
                          key={s}

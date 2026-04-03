@@ -8,7 +8,7 @@ import { useDbAuth } from "./DbContext";
 import {
   MessageSquare, Users, Database, Send, ArrowLeft,
   Loader2, AlertCircle, Shield, Eye, UserPlus, Trash2,
-  Clock, Table2, RefreshCw, LogOut, Sun, Moon, Plus, X, Check, CheckSquare, Square
+  Clock, Table2, RefreshCw, LogOut, Sun, Moon, Plus, X, Check, CheckSquare, Square, ChevronRight
 } from "lucide-react";
 import { toast } from "sonner";
 import { DbTableViewer } from "./components/DbTableViewer";
@@ -33,7 +33,7 @@ function emailColor(email: string) {
   return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
 }
 
-type Tab = "messages" | "membres" | "database" | "roles";
+type Tab = "home" | "messages" | "database" | "equipe";
 
 
 
@@ -52,7 +52,7 @@ export function DbWorkspaceView() {
   const [allUsers,  setAllUsers]  = useState<SupabaseUser[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState<string | null>(null);
-  const [tab,       setTab]       = useState<"messages" | "database" | "equipe">("messages");
+  const [tab,       setTab]       = useState<Tab>("home");
   const [input,     setInput]     = useState("");
   const [sending,   setSending]   = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -62,6 +62,7 @@ export function DbWorkspaceView() {
   const [newRole, setNewRole] = useState({ name: "", can_send_messages: false, can_view_database: false, can_manage_members: false });
   
   // Modals for members
+  const [showMembersModal, setShowMembersModal] = useState(false);
   const [showAddMember, setShowAddMember] = useState(false);
   const [addMemberEmail, setAddMemberEmail] = useState("");
   const [addMemberRole, setAddMemberRole] = useState("");
@@ -323,6 +324,42 @@ export function DbWorkspaceView() {
     </div>
   );
 
+  const FEATURE_CARDS: {
+    id: "messages" | "database" | "equipe";
+    label: string;
+    description: string;
+    icon: React.ElementType;
+    color: string;
+    hidden: boolean;
+  }[] = [
+    {
+      id: "messages",
+      label: "Messages",
+      description: "Communiquez avec les membres de l'espace en temps réel.",
+      icon: MessageSquare,
+      color: "#7c3aed",
+      hidden: !(isAdmin || wsFeaturesMessaging),
+    },
+    {
+      id: "database",
+      label: "Base de données",
+      description: "Consultez et gérez les tables de données de votre espace.",
+      icon: Database,
+      color: "#0891b2",
+      hidden: !canViewDb,
+    },
+    {
+      id: "equipe",
+      label: "Équipe & Rôles",
+      description: "Gérez les membres, les accès et les rôles personnalisés.",
+      icon: Shield,
+      color: "#059669",
+      hidden: !isOwner,
+    },
+  ];
+
+  const visibleCards = FEATURE_CARDS.filter((c) => !c.hidden);
+
   const TABS: { id: "messages" | "database" | "equipe"; label: string; icon: React.ElementType; hidden?: boolean }[] = [
     { id: "messages",  label: "Messages",       icon: MessageSquare, hidden: !(isAdmin || wsFeaturesMessaging) },
     { id: "database",  label: "Base de données", icon: Database, hidden: !(isAdmin || wsFeaturesDatabase) },
@@ -333,76 +370,11 @@ export function DbWorkspaceView() {
   const isDark = outletCtx?.isDark ?? false;
   const setIsDark = outletCtx?.setIsDark ?? (() => {});
 
-  return (
-    <div className="h-full flex overflow-hidden bg-background">
-      {/* ── Left: tab sidebar ────────────────────────────────── */}
-      <aside className="w-52 shrink-0 flex flex-col border-r border-border bg-card/30 h-full">
-        {/* Workspace identity */}
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 overflow-hidden border"
-              style={{ backgroundColor: `${workspace.color}25`, borderColor: `${workspace.color}40` }}>
-              {workspace.image_url ? (
-                <img src={workspace.image_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                workspace.emoji
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-black text-foreground truncate leading-tight">{workspace.name}</p>
-              {workspace.description && (
-                <p className="text-[10px] text-muted-foreground truncate mt-0.5 leading-tight">{workspace.description}</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-3 mb-2">Navigation</p>
-          {TABS.filter((t) => !t.hidden).map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left ${
-                tab === t.id
-                  ? "bg-primary/10 text-primary border border-primary/20"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              <t.icon className="w-4 h-4 shrink-0" />
-              <span className="truncate">{t.label}</span>
-              {tab === t.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
-            </button>
-          ))}
-        </nav>
-
-        {/* Member count */}
-        <div className="px-4 py-3 border-t border-border">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Users className="w-3.5 h-3.5" />
-            <span>{members.length} membre{members.length !== 1 ? "s" : ""}</span>
-          </div>
-        </div>
-
-        {/* Session + logout for non-admin */}
-        {!authUser?.isAdmin && (
-          <div className="p-3 border-t border-border space-y-2">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              <span className="text-[10px] text-muted-foreground font-semibold truncate">{authUser?.email}</span>
-            </div>
-             <button onClick={logout}
-              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-semibold text-destructive/80 border border-destructive/20 hover:bg-destructive/10 hover:text-destructive transition-all">
-              <LogOut className="w-3.5 h-3.5" /> Déconnexion
-            </button>
-          </div>
-        )}
-      </aside>
-
-      {/* ── Right: header + content ──────────────────────────── */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Compact header */}
+  // ── HOME landing page ─────────────────────────────────────────
+  if (tab === "home") {
+    return (
+      <div className="h-full flex flex-col overflow-hidden bg-background">
+        {/* Top bar */}
         <header className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card/30 shrink-0">
           {authUser?.isAdmin && (
             <button onClick={() => navigate("/celestial-db/workspaces")}
@@ -410,11 +382,218 @@ export function DbWorkspaceView() {
               <ArrowLeft className="w-4 h-4" />
             </button>
           )}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-black text-foreground truncate leading-tight">{workspace.name}</p>
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-sm shrink-0 border overflow-hidden"
+              style={{ backgroundColor: `${workspace.color}25`, borderColor: `${workspace.color}40` }}
+            >
+              {workspace.image_url
+                ? <img src={workspace.image_url} alt="" className="w-full h-full object-cover" />
+                : workspace.emoji}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-black text-foreground truncate leading-tight">{workspace.name}</p>
+              {workspace.description && (
+                <p className="text-[10px] text-muted-foreground truncate">{workspace.description}</p>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {/* Theme Toggle if non-admin (since admin has it in layout header) */}
+            {!authUser?.isAdmin && outletCtx && (
+              <button
+                onClick={() => setIsDark(!isDark)}
+                className="p-1.5 rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-all border border-border"
+              >
+                {isDark ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-indigo-500" />}
+              </button>
+            )}
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/50 border border-border">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] text-muted-foreground font-semibold truncate max-w-[140px]">
+                {authUser?.isAdmin ? authUser.email : authUser?.email?.split("@")[0]}
+              </span>
+            </div>
+            {authUser?.isAdmin ? (
+              <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary border border-primary/20">
+                <Shield className="w-3 h-3" /> Admin
+              </span>
+            ) : member && (
+              <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-muted text-muted-foreground border border-border">
+                {roleDisplay}
+              </span>
+            )}
+            <button onClick={() => setShowMembersModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all border border-border"
+              title="Voir les membres"
+            >
+              <Users className="w-4 h-4" /> <span>Membres</span>
+            </button>
+            {!authUser?.isAdmin && (
+              <button onClick={logout}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-destructive/70 hover:bg-destructive/10 hover:text-destructive transition-all border border-destructive/20">
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </header>
+
+        {/* Hub */}
+        <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center px-6 py-12">
+          {/* Workspace hero identity */}
+          <div className="text-center mb-10">
+            <div
+              className="w-20 h-20 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-4 border-2 overflow-hidden shadow-lg"
+              style={{ backgroundColor: `${workspace.color}20`, borderColor: `${workspace.color}50`, boxShadow: `0 8px 32px ${workspace.color}20` }}
+            >
+              {workspace.image_url
+                ? <img src={workspace.image_url} alt="" className="w-full h-full object-cover" />
+                : workspace.emoji}
+            </div>
+            <h1 className="text-2xl font-black text-foreground tracking-tight">{workspace.name}</h1>
+            {workspace.description && (
+              <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">{workspace.description}</p>
+            )}
+            <button 
+              onClick={() => setShowMembersModal(true)}
+              className="flex items-center justify-center gap-2 mx-auto mt-3 px-3 py-1.5 rounded-full hover:bg-muted/50 border border-transparent hover:border-border transition-all cursor-pointer group"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[11px] font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
+                {members.length} membre{members.length !== 1 ? "s" : ""}
+              </span>
+              <span className="text-muted-foreground/30">·</span>
+              <span className="text-[11px] font-semibold text-muted-foreground capitalize">
+                {roleDisplay}
+              </span>
+            </button>
+          </div>
+
+          {/* Feature cards */}
+          {visibleCards.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 rounded-2xl bg-muted border border-border flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-7 h-7 text-muted-foreground opacity-30" />
+              </div>
+              <p className="text-sm font-semibold text-muted-foreground">Vous n'avez aucune permission</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Contactez l'administrateur pour obtenir des accès.</p>
+            </div>
+          ) : (
+            <div className={`grid gap-4 w-full max-w-2xl ${
+              visibleCards.length === 1 ? "grid-cols-1 max-w-xs" :
+              visibleCards.length === 2 ? "grid-cols-1 sm:grid-cols-2 max-w-lg" :
+              "grid-cols-1 sm:grid-cols-3"
+            }`}>
+              {visibleCards.map((card) => {
+                const Icon = card.icon;
+                return (
+                  <button
+                    key={card.id}
+                    onClick={() => setTab(card.id)}
+                    className="group relative flex flex-col items-center text-center p-8 rounded-2xl border border-border bg-card hover:bg-card transition-all duration-200 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] overflow-hidden"
+                    style={{ ["--card-color" as any]: card.color }}
+                  >
+                    {/* Background glow on hover */}
+                    <div
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl"
+                      style={{ background: `radial-gradient(circle at 50% 0%, ${card.color}15, transparent 70%)` }}
+                    />
+                    {/* Top accent line */}
+                    <div
+                      className="absolute top-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ background: `linear-gradient(90deg, transparent, ${card.color}, transparent)` }}
+                    />
+
+                    <div
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 border transition-transform group-hover:scale-110 group-hover:shadow-lg duration-200 relative z-10"
+                      style={{
+                        backgroundColor: `${card.color}15`,
+                        borderColor: `${card.color}30`,
+                        boxShadow: `0 0 0 0px ${card.color}30`,
+                      }}
+                    >
+                      <Icon className="w-6 h-6" style={{ color: card.color }} />
+                    </div>
+                    <p className="text-base font-black text-foreground mb-1.5 relative z-10">{card.label}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed relative z-10">{card.description}</p>
+
+                    <div
+                      className="mt-5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all -translate-y-1 group-hover:translate-y-0 relative z-10"
+                      style={{ color: card.color }}
+                    >
+                      Ouvrir <ChevronRight className="w-3 h-3" />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Members List Modal (for home tab) */}
+        {showMembersModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+            <div className="w-full max-w-sm bg-card border border-border rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[80vh]">
+              <div className="px-4 py-3 border-b border-border flex justify-between items-center bg-muted/20 shrink-0">
+                <h3 className="font-bold text-sm text-foreground flex items-center gap-2"><Users className="w-4 h-4 text-primary" /> Membres de l'espace</h3>
+                <button onClick={() => setShowMembersModal(false)} className="text-muted-foreground hover:bg-muted p-1 rounded-md transition-colors"><X className="w-4 h-4"/></button>
+              </div>
+              <div className="p-2 overflow-y-auto flex-1">
+                {members.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">Aucun membre.</p>
+                ) : (
+                  <div className="space-y-1">
+                    {members.map(m => {
+                      const labelEmail = m.user_email || `Utilisateur (...${m.user_id.slice(-4)})`;
+                      const initials = m.user_email ? m.user_email.substring(0, 2).toUpperCase() : "U";
+                      return (
+                        <div key={m.id} className="flex items-center justify-between p-2 rounded-xl border border-transparent hover:bg-muted/50 hover:border-border transition-colors">
+                          <div className="flex-1 min-w-0 flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                              {initials}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-foreground truncate">{labelEmail}</p>
+                            </div>
+                          </div>
+                          <div className="shrink-0 ml-3">
+                            <span className="px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest bg-muted text-muted-foreground border border-border">
+                              {m.role}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col overflow-hidden bg-background">
+      {/* Compact header */}
+      <header className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card/30 shrink-0">
+        <button onClick={() => setTab("home")}
+          className="p-1.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all shrink-0">
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <div className="flex-1 min-w-0 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm shrink-0 border overflow-hidden"
+            style={{ backgroundColor: `${workspace.color}25`, borderColor: `${workspace.color}40` }}>
+            {workspace.image_url ? (
+              <img src={workspace.image_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              workspace.emoji
+            )}
+          </div>
+          <p className="text-sm font-black text-foreground truncate leading-tight">{workspace.name}</p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Theme Toggle if non-admin (since admin has it in layout header) */}
             {!authUser?.isAdmin && outletCtx && (
                <button 
                 onClick={() => setIsDark(!isDark)}
@@ -439,6 +618,12 @@ export function DbWorkspaceView() {
                 {roleDisplay}
               </span>
             )}
+            <button onClick={() => setShowMembersModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all border border-border"
+              title="Voir les membres"
+            >
+              <Users className="w-4 h-4" /> <span>Membres</span>
+            </button>
           </div>
         </header>
 
@@ -687,7 +872,47 @@ export function DbWorkspaceView() {
             </div>
           )}
         </div>
-      </div>
+
+      {/* Members List Modal */}
+      {showMembersModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-sm bg-card border border-border rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="px-4 py-3 border-b border-border flex justify-between items-center bg-muted/20 shrink-0">
+              <h3 className="font-bold text-sm text-foreground flex items-center gap-2"><Users className="w-4 h-4 text-primary" /> Membres de l'espace</h3>
+              <button onClick={() => setShowMembersModal(false)} className="text-muted-foreground hover:bg-muted p-1 rounded-md transition-colors"><X className="w-4 h-4"/></button>
+            </div>
+            <div className="p-2 overflow-y-auto flex-1">
+              {members.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-4">Aucun membre.</p>
+              ) : (
+                <div className="space-y-1">
+                  {members.map(m => {
+                    const labelEmail = m.user_email || `Utilisateur (...${m.user_id.slice(-4)})`;
+                    const initials = m.user_email ? m.user_email.substring(0, 2).toUpperCase() : "U";
+                    return (
+                      <div key={m.id} className="flex items-center justify-between p-2 rounded-xl border border-transparent hover:bg-muted/50 hover:border-border transition-colors">
+                        <div className="flex-1 min-w-0 flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                            {initials}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-foreground truncate">{labelEmail}</p>
+                          </div>
+                        </div>
+                        <div className="shrink-0 ml-3">
+                          <span className="px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest bg-muted text-muted-foreground border border-border">
+                            {m.role}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Role Creation Modal */}
       {showRoleModal && (
