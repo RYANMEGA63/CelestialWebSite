@@ -27,37 +27,34 @@ export function Realisations() {
 
   return (
     <div className="min-h-screen bg-background pb-32">
-      <div className="relative border-b border-border/40 overflow-hidden bg-background">
-        <div className="absolute inset-0 bg-linear-to-tr from-primary/5 via-transparent to-secondary/5" />
-        <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 relative z-10">
+      <div className="relative border-b border-border/50 bg-background">
+        <div className="mx-auto max-w-7xl px-6 lg:px-16 py-24 relative z-10">
           <motion.div 
             initial={{ opacity: 0, y: 20 }} 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-center"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-6">
-              <Layers className="w-3 h-3" />
+            <p className="font-body text-[10px] tracking-[0.25em] uppercase text-secondary font-medium mb-6">
               Portfolio
-            </div>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 tracking-tighter">
-              Nos <span className="text-primary italic">Réalisations</span>
+            </p>
+            <h1 className="text-foreground mb-6">
+              Nos <em className="text-secondary">Réalisations.</em>
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
+            <p className="font-body text-lg text-muted-foreground font-light leading-relaxed max-w-xl">
               Découvrez les projets qui définissent notre expertise et notre engagement envers l'excellence.
             </p>
           </motion.div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1600px] px-6 lg:px-16 py-16">
         {loading ? (
           <div className="py-20 text-center flex flex-col items-center gap-4">
-             <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-             <p className="text-muted-foreground font-medium italic">Chargement de nos succès...</p>
+             <div className="w-8 h-8 border-2 border-secondary border-t-transparent animate-spin" />
+             <p className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-medium">Chargement des données...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {projects.map((project, index) => (
               <ProjectCard key={project.id} project={project} categories={categories} index={index} />
             ))}
@@ -92,36 +89,36 @@ function ProjectCard({ project, categories, index }: { project: any; categories:
       transition={{ delay: (index % 2) * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       className="group"
     >
-      <Card hover className="h-full border-border/40 bg-card/40 backdrop-blur-sm overflow-hidden flex flex-col">
+      <Card className="h-full border-border/50 bg-card flex flex-col rounded-sm">
         {images.length > 0 ? (
-          <div className="relative aspect-video overflow-hidden group/carousel bg-muted/20">
+          <div className="relative aspect-video overflow-hidden group/carousel bg-muted">
             <img
               src={images[currentImageIndex]}
               alt={project.project_name}
               className="w-full h-full object-contain transition-all duration-500"
             />
-            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
             {images.length > 1 && (
               <>
                 <button 
                   onClick={prevImage} 
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-2 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-all z-20 border border-white/20"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/90 text-foreground p-1.5 opacity-0 group-hover/carousel:opacity-100 transition-all z-20 border border-border"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button 
                   onClick={nextImage} 
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-2 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-all z-20 border border-white/20"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/90 text-foreground p-1.5 opacity-0 group-hover/carousel:opacity-100 transition-all z-20 border border-border"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-4 h-4" />
                 </button>
                 
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
                   {images.map((_: string, i: number) => (
                     <div 
                       key={i} 
-                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${i === currentImageIndex ? 'bg-white w-4' : 'bg-white/40'}`} 
+                      className={`w-1.5 h-1.5 transition-all duration-300 ${i === currentImageIndex ? 'bg-white' : 'bg-white/40'}`} 
                     />
                   ))}
                 </div>
@@ -129,8 +126,8 @@ function ProjectCard({ project, categories, index }: { project: any; categories:
             )}
           </div>
         ) : (
-          <div className="relative aspect-video bg-muted/30 border-b border-border/20 flex flex-col items-center justify-center p-12 overflow-hidden group/fallback">
-            <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-secondary/5" />
+          <div className="relative aspect-video bg-muted border-b border-border flex flex-col items-center justify-center p-8 overflow-hidden group/fallback">
+            <div className="absolute inset-0 bg-muted" />
             <motion.div
               animate={{ 
                 rotate: [0, 10, -10, 0],
@@ -144,23 +141,18 @@ function ProjectCard({ project, categories, index }: { project: any; categories:
           </div>
         )}
         
-        <CardHeader className="flex-1 p-8">
-          <div className="flex items-start justify-between gap-6 mb-6">
-            <div className="flex-1">
-              <h3 className="text-3xl font-black tracking-tighter mb-2 group-hover:text-primary transition-colors duration-300">
-                {project.project_name}
-              </h3>
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-px bg-primary/40" />
-                <p className="text-sm font-bold text-primary/80 tracking-wide uppercase">{project.client_name}</p>
-              </div>
-            </div>
-            <div className="p-3 rounded-xl bg-muted border border-border/50 group-hover:bg-primary group-hover:text-white transition-all duration-300">
-              <ExternalLink className="w-5 h-5" />
+        <CardHeader className="flex-1 p-6">
+          <div className="flex flex-col gap-2 mb-4">
+            <h3 className="text-xl font-display font-medium tracking-tight group-hover:text-secondary transition-colors duration-300">
+              {project.project_name}
+            </h3>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-px bg-secondary/40" />
+              <p className="font-body text-[9px] text-secondary tracking-[0.1em] uppercase">{project.client_name}</p>
             </div>
           </div>
           
-          <p className="text-muted-foreground line-clamp-3 leading-relaxed font-medium mb-8">
+          <p className="font-body text-sm text-muted-foreground line-clamp-3 leading-relaxed font-light mb-6">
             {project.description}
           </p>
 
@@ -170,7 +162,7 @@ function ProjectCard({ project, categories, index }: { project: any; categories:
               return (
                 <span
                   key={tech}
-                  className="px-4 py-1.5 bg-muted/80 backdrop-blur-sm border border-border/40 rounded-lg text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:border-primary/30 hover:text-primary transition-all cursor-default"
+                  className="px-2 py-1 bg-muted border border-border/40 text-[9px] font-body uppercase tracking-[0.1em] text-muted-foreground"
                 >
                   {cat ? cat.label : tech}
                 </span>

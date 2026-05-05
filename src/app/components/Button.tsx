@@ -27,53 +27,44 @@ export function Button({
   target,
   rel,
 }: ButtonProps) {
-  const baseStyles = "relative inline-flex items-center justify-center font-semibold transition-all rounded-xl overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-95";
-  
+  const baseStyles =
+    "relative inline-flex items-center justify-center font-body font-medium tracking-wide transition-all disabled:opacity-50 disabled:cursor-not-allowed select-none";
+
   const variants = {
-    primary: "bg-primary text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:shadow-[0_0_25px_-5px_rgba(99,102,241,0.6)]",
-    secondary: "bg-muted text-foreground hover:bg-muted/80 border border-border/50",
-    outline: "border border-border bg-transparent hover:bg-muted/50 text-foreground",
-    ghost: "text-muted-foreground hover:bg-muted hover:text-foreground",
-    destructive: "bg-destructive text-white shadow-lg shadow-destructive/20 hover:bg-destructive/90",
+    // Solid sapphire — dominant CTA
+    primary:
+      "bg-secondary text-secondary-foreground hover:bg-secondary/90",
+    // Muted surface — secondary action
+    secondary:
+      "bg-muted text-foreground hover:bg-muted/80 border border-border/60",
+    // Bordered — ghost-light
+    outline:
+      "border border-foreground/20 bg-transparent hover:border-secondary hover:text-secondary text-foreground",
+    // Invisible until hovered
+    ghost:
+      "text-muted-foreground hover:bg-muted hover:text-foreground",
+    // Danger
+    destructive:
+      "bg-destructive text-destructive-foreground hover:bg-destructive/90",
   };
 
   const sizes = {
-    sm: "px-4 py-1.5 text-xs",
-    md: "px-6 py-2.5 text-sm",
-    lg: "px-8 py-3.5 text-base",
+    sm: "px-4 py-2 text-[11px] tracking-[0.12em]",
+    md: "px-6 py-2.5 text-[12px] tracking-[0.1em]",
+    lg: "px-8 py-4 text-[12px] tracking-[0.12em]",
   };
 
-  const classes = `${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`;
-
-  const Content = (
-    <>
-      {variant === "primary" && (
-        <motion.div
-          initial={{ x: "-100%" }}
-          animate={{ x: "100%" }}
-          transition={{
-            repeat: Infinity,
-            duration: 2,
-            ease: "linear",
-          }}
-          className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent pointer-events-none"
-        />
-      )}
-      <span className="relative z-10 flex items-center gap-2">
-        {children}
-      </span>
-    </>
-  );
+  // Uppercase label treatment — consistent with luxury editorial style
+  const classes = `${baseStyles} uppercase ${variants[variant]} ${sizes[size]} ${className}`;
 
   if (href) {
     return (
       <motion.div
-        whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         className="inline-block"
       >
         <Link to={href} target={target} rel={rel} className={classes}>
-          {Content}
+          <span className="flex items-center gap-2">{children}</span>
         </Link>
       </motion.div>
     );
@@ -81,14 +72,13 @@ export function Button({
 
   return (
     <motion.button
-      whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       type={type}
       onClick={onClick}
       className={classes}
       disabled={disabled}
     >
-      {Content}
+      <span className="flex items-center gap-2">{children}</span>
     </motion.button>
   );
 }

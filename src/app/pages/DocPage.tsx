@@ -148,21 +148,17 @@ export function DocPage({ doc, categoryLabel, onBack, prevDoc, nextDoc, embedded
 
   return (
        <div className={`${embedded ? "" : "min-h-screen bg-background"} selection:bg-primary/20`}>
-         {/* Floating TOC (Sommaire Flottant) */}
-         {!embedded && (<aside className="fixed right-8 top-1/2 -translate-y-1/2 z-40 hidden xl:block w-72">
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="p-8 border border-border/40 bg-card/40 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl relative overflow-hidden group"
-            >
-               <div className="absolute inset-0 bg-linear-to-b from-primary/5 to-transparent pointer-events-none" />
-               <div className="flex items-center gap-3 mb-8 pb-4 border-b border-border/20 relative z-10">
-                  <div className="p-2 rounded-lg bg-primary/10 text-primary">
+         {/* Sidebar TOC (Sommaire) */}
+         {!embedded && (<aside className="fixed right-0 top-0 bottom-0 z-40 hidden xl:flex flex-col w-72 border-l border-border bg-background pt-32">
+            <div className="px-8 pb-4 mb-4 border-b border-border/50">
+               <div className="flex items-center gap-3">
+                  <div className="p-1 bg-foreground text-background">
                      <BookOpen className="w-4 h-4" />
                   </div>
-                  <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/50">Sommaire</h4>
+                  <h4 className="text-xs font-mono uppercase font-bold text-foreground">Sommaire</h4>
                </div>
-               <nav className="space-y-3 relative z-10 max-h-[60vh] overflow-y-auto no-scrollbar pr-2">
+            </div>
+            <nav className="flex-1 overflow-y-auto px-8 pb-8 space-y-1 no-scrollbar">
                   {sections.map((section, idx) => (
                     <div key={section.id} className="space-y-2">
                       <button
@@ -178,25 +174,24 @@ export function DocPage({ doc, categoryLabel, onBack, prevDoc, nextDoc, embedded
                       </button>
                     </div>
                   ))}
-               </nav>
-            </motion.div>
+            </nav>
          </aside>)}
   
          {/* Main Content Area */}
-         <div className={`px-6 ${embedded ? "pt-4 pb-16" : "pt-32 pb-48"}`}>
+         <div className={`px-6 sm:px-12 xl:pr-80 ${embedded ? "pt-8 pb-16" : "pt-32 pb-48 max-w-7xl mx-auto"}`}>
            <motion.header 
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
-             className="mb-16"
+             className="mb-12"
            >
-             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
+             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-3">
                 {!embedded && (
                 <button 
                   onClick={onBack}
-                  className="group flex items-center gap-3 px-5 py-2.5 rounded-full bg-muted border border-border/50 text-[10px] font-black uppercase tracking-widest hover:border-primary/50 transition-all shadow-sm"
+                  className="group flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-none"
                 >
-                  <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-                  Documentation
+                  <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                  Back to Docs
                 </button>
                 )}
                 <div className="flex flex-wrap items-center gap-2">

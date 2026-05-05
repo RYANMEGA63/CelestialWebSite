@@ -1,21 +1,76 @@
 # antigravity.md — Protocole de travail & Analyse du projet
 
-## Protocole obligatoire avant chaque tâche
+---
+## 🔴 PROTOCOLE OBLIGATOIRE — À suivre pour CHAQUE tâche
 
-Avant de commencer chaque tâche :
+> ⚠️ Ce fichier (`antigravity.md`) doit être lu systématiquement en début de session. Ce protocole est non négociable. Tu dois toujours lire ce fichier, t'y référer et suivre chaque phase dans l'ordre strict.
 
-1. **Reformuler** ce qui a été compris de la demande
-2. **Expliquer** ce qui va être fait et pourquoi
-3. **Implémenter** le fix
-4. **Tester** : lancer des tests sur la logique modifiée (syntaxe, comportement, cohérence entre fichiers), minimum 8 tests
+---
 
+### PHASE 1 — Lire le contexte (Obsidian Vault)
 
-> ⚠️ Ne jamais livrer sans avoir testé. Ne jamais modifier plusieurs fichiers sans vérifier les impacts croisés.
+Avant toute action, lire les notes du vault Obsidian pour récupérer le contexte du projet.
+
+**Fichiers à consulter en priorité :**
+
+```
+Personal brain/📋 Vue d'ensemble du projet.md    → routes, pages, modules
+Personal brain/🏗️ Architecture & Stack.md         → stack, structure fichiers, conventions
+Personal brain/🔐 Celestial DB — DB Manager.md   → si la tâche touche au DB Manager
+Personal brain/🗄️ Base de données (Supabase).md   → si la tâche touche à la BDD
+Personal brain/🐛 Bugs connus & dette technique.md → vérifier si déjà traité
+Personal brain/📅 Journal des sessions.md          → historique, ne pas refaire ce qui est fait
+```
+
+**Objectif :** comprendre l'état actuel, identifier les fichiers impactés, éviter les régressions.
+
+---
+
+### PHASE 2 — Exécuter la tâche
+
+1. **Reformuler** la demande pour confirmer la compréhension
+2. **Identifier** les fichiers à modifier et les impacts croisés
+3. **Implémenter** le changement
+4. **Ne jamais modifier** ce qui n'a pas été demandé explicitement
+
+---
+
+### PHASE 3 — 8 Tests de validation
+
+Après chaque implémentation, lancer **8 tests minimum** avant de livrer.
+
+**Checklist des tests :**
+
+```
+TEST 1 — Syntaxe TypeScript    : aucune erreur de compilation (imports, types)
+TEST 2 — Logique principale    : le comportement implémenté fonctionne comme attendu
+TEST 3 — Cas limite (edge)     : données vides / nulles / inattendues
+TEST 4 — Permissions           : admin / membre / sans-permission se comportent correctement
+TEST 5 — Responsive mobile     : affichage correct sur petit écran (< 640px)
+TEST 6 — Dark mode             : couleurs correctes en mode sombre
+TEST 7 — Impacts croisés       : les fichiers non modifiés ne sont pas cassés
+TEST 8 — Régression            : une fonctionnalité liée existante fonctionne toujours
+```
+
+> ⚠️ Ne jamais livrer sans avoir passé les 8 tests. Indiquer les résultats dans la réponse.
+
+---
+
+### PHASE 4 — Mettre à jour le contexte (Obsidian Vault)
+
+À la fin de chaque tâche ou session, tu DOIS mettre à jour le vault Obsidian (`Personal brain/`) :
+1. Documenter les nouvelles fonctionnalités, modifications d'architecture ou bugs résolus.
+2. Mettre à jour le `📅 Journal des sessions.md` pour garder une trace du travail effectué.
+
+> **Objectif :** Garantir que le contexte est toujours frais et exact pour les futures sessions.
+
+---
 
 ## Règles absolues
 
-- **Pas de modification non sollicitée** : si l'utilisateur ne demande pas explicitement une modification, ne rien changer. Aucune initiative de nettoyage, refactoring ou correction non demandée.
-- **Ne pas retraiter ce qui est déjà fait** : avant toute action, lire l'historique des sessions dans ce fichier. Si une tâche est déjà marquée comme effectuée (ex : fichier supprimé, route retirée, bug corrigé), ne pas la refaire. Toute action doit porter sur quelque chose qui n'a pas encore été traité.
+- **Pas de modification non sollicitée** — aucune initiative de nettoyage, refactoring ou correction non demandée
+- **Ne pas retraiter ce qui est déjà fait** — consulter le Journal des sessions avant d'agir
+- **Toujours vérifier les impacts croisés** entre les fichiers modifiés
 
 
 ---

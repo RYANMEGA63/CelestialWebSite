@@ -2,86 +2,113 @@
 
 :root {
   --font-size: 16px;
-  --background: #FFFFFF;
-  --foreground: #000000;
+
+  /* ── Luxury Industrial Light Palette — Slate ──────────── */
+  --background: #F8FAFC;        /* slate-50 */
+  --foreground: #020617;        /* slate-950 */
   --card: #FFFFFF;
-  --card-foreground: #000000;
+  --card-foreground: #020617;
   --popover: #FFFFFF;
-  --popover-foreground: #000000;
-  --primary: #6366F1;
-  --primary-foreground: #ffffff;
-  --secondary: #06B6D4;
-  --secondary-foreground: #ffffff;
-  --muted: #F8F8F8;
-  --muted-foreground: #666666;
-  --accent: #8B5CF6;
-  --accent-foreground: #ffffff;
+  --popover-foreground: #020617;
+
+  --primary: #020617;
+  --primary-foreground: #F8FAFC;
+
+  --secondary: #3B82F6;         /* blue-500 */
+  --secondary-foreground: #FFFFFF;
+
+  --muted: #F1F5F9;             /* slate-100 */
+  --muted-foreground: #64748B;  /* slate-500 */
+
+  --accent: #3B82F6;
+  --accent-foreground: #FFFFFF;
+
   --destructive: #EF4444;
   --destructive-foreground: #ffffff;
-  --golden: #D4A017;
-  --golden-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.08);
+
+  --golden: #3B82F6;
+  --golden-foreground: #FFFFFF;
+
+  --border: #E2E8F0;            /* slate-200 */
+  --border-strong: #CBD5E1;     /* slate-300 */
   --input: transparent;
-  --input-background: #F8F8F8;
-  --switch-background: #E5E5E5;
+  --input-background: #F1F5F9;
+  --switch-background: #CBD5E1;
+
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #6366F1;
-  --chart-1: #6366F1;
-  --chart-2: #06B6D4;
-  --chart-3: #8B5CF6;
-  --chart-4: #14B8A6;
-  --chart-5: #F59E0B;
-  --radius: 0.75rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #000000;
-  --sidebar-primary: #6366F1;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #F8F8F8;
-  --sidebar-accent-foreground: #000000;
-  --sidebar-border: rgba(0, 0, 0, 0.08);
-  --sidebar-ring: #6366F1;
+  --ring: #3B82F6;
+
+  --chart-1: #3B82F6;
+  --chart-2: #020617;
+  --chart-3: #64748B;
+  --chart-4: #60A5FA;
+  --chart-5: #93C5FD;
+
+  --radius: 0.25rem;
+
+  --sidebar: #F8FAFC;
+  --sidebar-foreground: #020617;
+  --sidebar-primary: #020617;
+  --sidebar-primary-foreground: #F8FAFC;
+  --sidebar-accent: #F1F5F9;
+  --sidebar-accent-foreground: #020617;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #3B82F6;
 }
 
 .dark {
-  --background: #030303;
-  --foreground: #fafafa;
-  --card: #0a0a0a;
-  --card-foreground: #fafafa;
-  --popover: #0a0a0a;
-  --popover-foreground: #fafafa;
-  --primary: #6366F1;
-  --primary-foreground: #ffffff;
-  --secondary: #06B6D4;
-  --secondary-foreground: #ffffff;
-  --muted: #111111;
-  --muted-foreground: #888888;
-  --accent: #8B5CF6;
-  --accent-foreground: #ffffff;
+  /* ── Luxury Industrial Dark Palette — Deep Slate ─────────────────── */
+  --background: #020617;        /* slate-950 */
+  --foreground: #F8FAFC;        /* slate-50 */
+  --card: #0F172A;              /* slate-900 */
+  --card-foreground: #F8FAFC;
+  --popover: #0F172A;
+  --popover-foreground: #F8FAFC;
+
+  --primary: #F8FAFC;
+  --primary-foreground: #020617;
+
+  --secondary: #3B82F6;
+  --secondary-foreground: #FFFFFF;
+
+  --muted: #1E293B;             /* slate-800 */
+  --muted-foreground: #94A3B8;  /* slate-400 */
+
+  --accent: #3B82F6;
+  --accent-foreground: #FFFFFF;
+
   --destructive: #EF4444;
   --destructive-foreground: #ffffff;
-  --golden: #F5C842;
-  --golden-foreground: #000000;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.05);
-  --input-background: #0a0a0a;
-  --switch-background: #262626;
-  --ring: #6366F1;
+
+  --golden: #3B82F6;
+  --golden-foreground: #FFFFFF;
+
+  --border: #1E293B;            /* slate-800 */
+  --border-strong: #334155;     /* slate-700 */
+  --input: rgba(248, 250, 252, 0.05);
+  --input-background: #0F172A;
+  --switch-background: #334155;
+
+  --ring: #3B82F6;
+
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --chart-1: #6366F1;
-  --chart-2: #06B6D4;
-  --chart-3: #8B5CF6;
-  --chart-4: #2DD4BF;
-  --chart-5: #FBBF24;
-  --sidebar: #0a0a0a;
-  --sidebar-foreground: #fafafa;
-  --sidebar-primary: #6366F1;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #111111;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #6366F1;
+
+  --chart-1: #F8FAFC;
+  --chart-2: #3B82F6;
+  --chart-3: #94A3B8;
+  --chart-4: #60A5FA;
+  --chart-5: #93C5FD;
+
+  --sidebar: #020617;
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-primary: #F8FAFC;
+  --sidebar-primary-foreground: #020617;
+  --sidebar-accent: #1E293B;
+  --sidebar-accent-foreground: #F8FAFC;
+  --sidebar-border: #1E293B;
+  --sidebar-ring: #3B82F6;
 }
 
 @theme inline {
@@ -113,10 +140,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -138,51 +165,42 @@
 
   body {
     @apply bg-background text-foreground;
+    letter-spacing: -0.01em;
   }
 
-  /**
-  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
-  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
-  */
+  /* Smooth Theme Transitions */
+  *, ::before, ::after {
+    transition-property: background-color, border-color, color, fill, stroke, text-decoration-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 500ms;
+  }
 
   html {
     font-size: var(--font-size);
   }
 
-  h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display, 'Georgia', serif);
+    letter-spacing: -0.02em;
+    font-weight: 500;
   }
 
-  h2 {
-    font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h3 {
-    font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h4 {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
+  h1 { font-size: clamp(2.5rem, 6vw, 5rem); line-height: 1.05; }
+  h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.1; }
+  h3 { font-size: clamp(1.5rem, 2.5vw, 2rem); line-height: 1.2; }
+  h4 { font-size: 1.25rem; line-height: 1.3; }
 
   label {
     font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
+    font-weight: 500;
     line-height: 1.5;
   }
 
   button {
     font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
+    font-weight: 500;
     line-height: 1.5;
+    letter-spacing: 0;
   }
 
   input {
@@ -191,37 +209,27 @@
     line-height: 1.5;
   }
 
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  /* ── Sapphire Scrollbar ───────────────────────────────────── */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Premium Scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    transition: all 0.3s ease;
+    background: var(--secondary);
+    border-radius: 2px;
+    opacity: 0.4;
   }
+  ::-webkit-scrollbar-thumb:hover { opacity: 1; }
 
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--primary);
-  }
-
-  /* Specific containers scrollbar */
   .overflow-x-auto, .overflow-y-auto {
-    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+    scrollbar-color: var(--secondary) transparent;
     scrollbar-width: thin;
+  }
+
+  /* ── Selection highlight ──────────────────────────────────── */
+  ::selection {
+    background: var(--secondary);
+    color: #FFFFFF;
   }
 }

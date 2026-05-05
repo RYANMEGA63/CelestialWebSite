@@ -1,4 +1,4 @@
-import { ReactNode, useState, useRef } from "react";
+import { ReactNode, useRef } from "react";
 import { motion, useMotionValue, useMotionTemplate } from "framer-motion";
 
 interface CardProps {
@@ -9,7 +9,12 @@ interface CardProps {
   overflowVisible?: boolean;
 }
 
-export function Card({ children, className = "", hover = false, gradient = false, overflowVisible = false }: CardProps) {
+export function Card({
+  children,
+  className = "",
+  hover = false,
+  overflowVisible = false,
+}: CardProps) {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -20,27 +25,26 @@ export function Card({ children, className = "", hover = false, gradient = false
     mouseY.set(clientY - top);
   }
 
-  const baseStyles = `bg-card rounded-2xl border border-border/50 ${overflowVisible ? "" : "overflow-hidden"}`;
-  const shadowStyles = "shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)]";
-
   return (
     <motion.div
       ref={cardRef}
       onMouseMove={handleMouseMove}
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
+      viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className={`group relative ${baseStyles} ${shadowStyles} ${hover ? "transition-all duration-300 hover:-translate-y-1 hover:border-primary/30" : ""} ${className}`}
+      className={`group relative bg-card border border-border/50 ${overflowVisible ? "" : "overflow-hidden"} ${
+        hover ? "transition-all duration-300 hover:-translate-y-1 hover:border-secondary/30" : ""
+      } ${className}`}
     >
-      {/* Spotlight Effect */}
+      {/* Sapphire spotlight — follows cursor */}
       <motion.div
-        className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition duration-300 group-hover:opacity-100"
+        className="pointer-events-none absolute -inset-px opacity-0 transition duration-300 group-hover:opacity-100"
         style={{
           background: useMotionTemplate`
             radial-gradient(
-              650px circle at ${mouseX}px ${mouseY}px,
-              rgba(99, 102, 241, 0.1),
+              500px circle at ${mouseX}px ${mouseY}px,
+              rgba(45, 125, 210, 0.07),
               transparent 80%
             )
           `,
@@ -53,29 +57,17 @@ export function Card({ children, className = "", hover = false, gradient = false
   );
 }
 
-interface CardHeaderProps {
-  children: ReactNode;
-  className?: string;
-}
-
+interface CardHeaderProps { children: ReactNode; className?: string; }
 export function CardHeader({ children, className = "" }: CardHeaderProps) {
   return <div className={`p-8 ${className}`}>{children}</div>;
 }
 
-interface CardContentProps {
-  children: ReactNode;
-  className?: string;
-}
-
+interface CardContentProps { children: ReactNode; className?: string; }
 export function CardContent({ children, className = "" }: CardContentProps) {
   return <div className={`px-8 pb-8 pt-0 ${className}`}>{children}</div>;
 }
 
-interface CardFooterProps {
-  children: ReactNode;
-  className?: string;
-}
-
+interface CardFooterProps { children: ReactNode; className?: string; }
 export function CardFooter({ children, className = "" }: CardFooterProps) {
   return <div className={`p-8 pt-0 ${className}`}>{children}</div>;
 }

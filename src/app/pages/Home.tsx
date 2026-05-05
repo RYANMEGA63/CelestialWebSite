@@ -1,153 +1,456 @@
-import { Button } from "../components/Button";
-import { Card, CardHeader, CardContent } from "../components/Card";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import {
+  ChevronRight,
+  ArrowRight,
   Code2,
   Zap,
   Shield,
   BookOpen,
-  Sparkles,
-  ChevronRight,
-  Check,
-  TrendingUp,
-  Users,
-  Award,
-  ArrowRight,
-  Terminal,
   Globe,
   Cpu,
 } from "lucide-react";
 import { Link } from "react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "../../lib/supabase";
 import { format } from "date-fns";
+import { useUIStore } from "../../store/useUIStore";
 
+// ── Helpers ───────────────────────────────────────────────────
+function GoldRule() {
+  return (
+    <div className="flex items-center gap-4 my-2">
+      <div className="h-px flex-1 bg-secondary/30" />
+      <div className="w-1 h-1 rotate-45 bg-secondary" />
+      <div className="h-px flex-1 bg-secondary/30" />
+    </div>
+  );
+}
+
+function EyebrowLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="font-body text-[10px] tracking-[0.25em] uppercase text-secondary font-medium mb-6">
+      {children}
+    </p>
+  );
+}
+
+// ── Main ──────────────────────────────────────────────────────
 export function Home() {
   return (
-    <div className="relative">
+    <div className="relative bg-background">
       <HomeContent />
     </div>
   );
 }
 
-function TechAnimation() {
-  const terminalLines = [
-    "INIT LOGICIEL CELESTIAL...",
-    "SCAN DES SYSTÈMES : OK",
-    "CLIENTS RAPPORTÉS : +243%",
-    "CHIFFRE D'AFFAIRES : +150%",
-    "EFFICACITÉ MAXIMALE DÉTECTÉE."
-  ];
+// ── Hero ──────────────────────────────────────────────────────
+function HeroSection() {
+  const ref = useRef<HTMLElement>(null);
+  const openWizard = useUIStore((state) => state.openWizard);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], ["0px", "100px"]);
+  const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Background Particles */}
-      {[...Array(20)].map((_, i) => (
-        <motion.div
-          key={i}
-          initial={{ 
-            x: Math.random() * 1000 - 500, 
-            y: Math.random() * 800 - 400,
-            opacity: 0 
-          }}
-          animate={{ 
-            y: [null, Math.random() * 200 - 100, null],
-            opacity: [0.05, 0.15, 0.05],
-            scale: [1, 1.2, 1]
-          }}
-          transition={{ 
-            duration: 7 + Math.random() * 5, 
-            repeat: Infinity,
-            ease: "easeInOut" 
-          }}
-          className="absolute w-2 h-2 rounded-full bg-primary/30 blur-[2px]"
-        />
-      ))}
-
-      {/* Floating Terminal */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9, x: 100, y: 100 }}
-        animate={{ opacity: 1, scale: 1, y: [100, 80, 100] }}
-        transition={{ 
-          opacity: { duration: 1.5 },
-          scale: { duration: 1.5 },
-          y: { duration: 5, repeat: Infinity, ease: "easeInOut" }
+    <section ref={ref} className="relative min-h-[100svh] flex flex-col overflow-hidden bg-background">
+      {/* Grain texture overlay */}
+      <div
+        className="absolute inset-0 opacity-[0.04] pointer-events-none dark:opacity-[0.06]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
         }}
-        className="absolute right-[10%] bottom-[20%] w-72 h-48 bg-card/40 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl hidden lg:block overflow-hidden"
+      />
+
+      {/* Gold gradient accent — top right */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full opacity-[0.06] blur-[120px] pointer-events-none"
+        style={{ background: "radial-gradient(circle, var(--color-secondary) 0%, transparent 70%)" }} />
+
+      {/* Vertical rule — left */}
+      <div className="absolute left-8 md:left-16 top-32 bottom-32 w-px bg-border/50 hidden lg:block" />
+
+      {/* Top Spacer for safe centering */}
+      <div className="relative z-10 flex-1 min-h-[8rem] lg:min-h-[12rem]" />
+
+      <motion.div
+        style={{ y, opacity }}
+        className="relative z-10 mx-auto max-w-7xl w-full px-6 lg:px-16"
       >
-        <div className="h-6 bg-muted/50 border-b border-border/30 flex items-center px-3 gap-1.5 leading-none">
-          <div className="w-2 h-2 rounded-full bg-red-500/20" />
-          <div className="w-2 h-2 rounded-full bg-amber-500/20" />
-          <div className="w-2 h-2 rounded-full bg-emerald-500/20" />
-          <span className="text-[8px] font-black tracking-widest text-muted-foreground/30 ml-auto">RUNTIME.SYS</span>
-        </div>
-        <div className="p-4 space-y-2 font-mono text-[9px]">
-          {terminalLines.map((line, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -5 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1 + i * 0.4, duration: 0.5 }}
-              className={`flex items-center gap-2 ${i > 1 && i < 4 ? "text-primary font-bold" : "text-muted-foreground/60"}`}
-            >
-              <span className="opacity-30 tracking-tighter">[{i + 1}]</span>
-              <span className={i === terminalLines.length - 1 ? "animate-pulse" : ""}>{line}</span>
-            </motion.div>
+        {/* Status badge */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="flex items-center gap-3 mb-12 sm:mb-16"
+        >
+          <div className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
+          <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground font-body">
+            Celestial Studio — Solutions d'Excellence
+          </span>
+        </motion.div>
+
+        {/* Main headline */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <h1 className="text-foreground leading-none mb-8"
+            style={{ fontFamily: "var(--font-display)", fontWeight: 300, letterSpacing: "-0.03em" }}>
+            <span className="block text-[clamp(2.5rem,8vw,7rem)]">L'Informatique</span>
+            <span className="block text-[clamp(2.5rem,8vw,7rem)] italic text-secondary">
+              Redéfinie.
+            </span>
+          </h1>
+
+          <GoldRule />
+
+          <p className="mt-8 text-muted-foreground font-body text-base sm:text-lg md:text-xl font-light max-w-xl leading-relaxed">
+            Des architectures numériques conçues pour durer. Solutions SaaS, applications métier et documentation de classe mondiale.
+          </p>
+        </motion.div>
+
+        {/* CTAs */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="mt-12 flex flex-wrap items-center gap-6"
+        >
+          <button 
+            onClick={() => openWizard()}
+            className="group flex items-center gap-3 px-8 py-4 bg-secondary text-secondary-foreground font-body font-medium text-xs sm:text-sm tracking-wide transition-all hover:bg-secondary/90 hover:gap-5"
+          >
+            Lancer un projet
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </button>
+          <Link to="/realisations"
+            className="group flex items-center gap-3 text-muted-foreground font-body text-xs sm:text-sm tracking-wide hover:text-foreground transition-colors">
+            Voir nos réalisations
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </motion.div>
+
+        {/* Stats — bottom row */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.7 }}
+          className="mt-16 sm:mt-24 pt-8 border-t border-border/50 grid grid-cols-2 md:grid-cols-4 gap-8"
+        >
+          {[
+            { value: "500+", label: "Architectures déployées" },
+            { value: "99.9%", label: "Uptime garanti" },
+            { value: "24/7", label: "Support dédié" },
+            { value: "15 ans", label: "D'excellence" },
+          ].map((s, i) => (
+            <div key={i}>
+              <div className="text-foreground font-display text-2xl sm:text-3xl md:text-4xl font-light tracking-tight"
+                style={{ fontFamily: "var(--font-display)" }}>
+                {s.value}
+              </div>
+              <div className="text-muted-foreground font-body text-[9px] sm:text-[11px] tracking-[0.15em] uppercase mt-1">
+                {s.label}
+              </div>
+            </div>
           ))}
-        </div>
+        </motion.div>
       </motion.div>
-      
-      <svg className="absolute inset-0 w-full h-full opacity-[0.03]">
-         <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-           <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="1" />
-         </pattern>
-         <rect width="100%" height="100%" fill="url(#grid)" />
-      </svg>
-    </div>
+
+      {/* Bottom Spacer for safe centering */}
+      <div className="relative z-10 flex-1 min-h-[6rem] lg:min-h-[8rem]" />
+
+      {/* Scroll indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2 }}
+        className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+      >
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="w-px h-12 bg-gradient-to-b from-secondary/60 to-transparent"
+        />
+      </motion.div>
+    </section>
   );
 }
 
-function HomeContent() {
-  const features = [
+// ── Products / Services showcase ──────────────────────────────
+function ServicesSection() {
+  const services = [
     {
+      number: "01",
       icon: Code2,
       title: "Applications Sur-Mesure",
-      description: "Nous forgeons des logiciels uniques, sculptés pour vos processus métiers les plus complexes.",
+      description: "Logiciels uniques sculptés pour vos processus métiers les plus complexes. De la conception à la livraison, une exécution irréprochable.",
+      tag: "Développement",
     },
     {
+      number: "02",
       icon: BookOpen,
       title: "Documentation Interactive",
-      description: "Un savoir partagé en temps réel, accessible et structuré pour une autonomie totale.",
+      description: "Un savoir partagé, structuré et accessible en temps réel. Transformez votre expertise en actif stratégique.",
+      tag: "Knowledge",
     },
     {
+      number: "03",
       icon: Zap,
       title: "Performance Ultime",
-      description: "Optimisation de bas niveau pour une vitesse d'exécution qui défie la concurrence.",
+      description: "Optimisation de bas niveau pour une vitesse d'exécution qui défie la concurrence. Architecture pensée pour durer.",
+      tag: "Optimisation",
     },
     {
+      number: "04",
       icon: Shield,
       title: "Sécurité Infaillible",
-      description: "Arquitectures blindées protégeant l'intégrité de vos flux de données stratégiques.",
+      description: "Architectures blindées protégeant l'intégrité de vos flux de données stratégiques. Confiance totale, sans compromis.",
+      tag: "Sécurité",
     },
     {
+      number: "05",
       icon: Globe,
       title: "Scalabilité Globale",
-      description: "Prêt pour la croissance. Nos systèmes évoluent avec votre succès, sans friction.",
+      description: "Nos systèmes évoluent avec votre succès. De quelques utilisateurs à des millions — sans friction, sans rupture.",
+      tag: "Infrastructure",
     },
     {
+      number: "06",
       icon: Cpu,
       title: "IA & Automation",
-      description: "L'intelligence artificielle au service de votre productivité quotidienne.",
+      description: "L'intelligence artificielle au service de votre productivité. Automatisez l'ordinaire, concentrez-vous sur l'extraordinaire.",
+      tag: "Intelligence",
     },
   ];
 
-  const stats = [
-    { value: "500+", label: "Architectures Déployées" },
-    { value: "99.9%", label: "Uptime Garanti" },
-    { value: "24/7", label: "Expertise à l'écoute" },
-    { value: "15+", label: "Ans d'Excellence" },
-  ];
+  return (
+    <section className="py-32 lg:py-48 bg-background relative">
+      {/* Subtle top border */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-secondary/30 to-transparent" />
 
+      <div className="mx-auto max-w-7xl px-6 lg:px-16">
+        {/* Section header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="mb-20 md:mb-32 flex flex-col md:flex-row md:items-end gap-8 md:gap-24"
+        >
+          <div className="flex-1">
+            <EyebrowLabel>Nos produits</EyebrowLabel>
+            <h2 className="text-foreground">Éprouvé par<br /><em>l'excellence.</em></h2>
+          </div>
+          <p className="text-muted-foreground font-body text-lg font-light leading-relaxed max-w-sm md:mb-2">
+            Chaque solution est conçue avec le même niveau d'exigence — celui que vous méritez.
+          </p>
+        </motion.div>
+
+        {/* Services grid — editorial layout */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-0 border border-border/50">
+          {services.map((s, i) => {
+            const Icon = s.icon;
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.07 }}
+                className="group relative p-8 md:p-10 border-b border-r border-border/50 hover:bg-muted/50 transition-all duration-500 cursor-default overflow-hidden"
+              >
+                {/* Gold hover accent top */}
+                <div className="absolute top-0 left-0 right-0 h-px bg-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+
+                {/* Number */}
+                <div className="text-[11px] tracking-[0.2em] text-muted-foreground/40 font-body mb-8 flex items-center justify-between">
+                  <span>{s.number}</span>
+                  <span className="text-[9px] tracking-[0.2em] uppercase text-secondary/70 border border-secondary/20 px-2 py-0.5">
+                    {s.tag}
+                  </span>
+                </div>
+
+                {/* Icon */}
+                <div className="mb-6 w-10 h-10 flex items-center justify-center text-secondary">
+                  <Icon className="w-5 h-5" strokeWidth={1.5} />
+                </div>
+
+                {/* Content */}
+                <h3 className="text-foreground text-xl mb-4" style={{ fontFamily: "var(--font-display)", fontWeight: 500 }}>
+                  {s.title}
+                </h3>
+                <p className="text-muted-foreground font-body text-sm font-light leading-relaxed">
+                  {s.description}
+                </p>
+
+                {/* Hover arrow */}
+                <div className="mt-8 flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase text-secondary opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-2 group-hover:translate-x-0">
+                  <span>Explorer</span>
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Statement / Philosophy ────────────────────────────────────
+function StatementSection() {
+  return (
+    <section className="py-32 lg:py-48 bg-muted/30 relative overflow-hidden">
+      {/* Gold ambient */}
+      <div className="absolute bottom-0 left-1/4 w-[800px] h-[400px] rounded-full opacity-[0.04] blur-[100px] pointer-events-none"
+        style={{ background: "radial-gradient(circle, var(--color-secondary) 0%, transparent 70%)" }} />
+
+      <div className="mx-auto max-w-7xl px-6 lg:px-16 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1 }}
+        >
+          <EyebrowLabel>Notre philosophie</EyebrowLabel>
+
+          {/* Large editorial quote */}
+          <blockquote className="text-foreground leading-tight mb-16"
+            style={{ fontFamily: "var(--font-display)", fontWeight: 300, letterSpacing: "-0.02em", fontSize: "clamp(2rem, 5vw, 4.5rem)" }}>
+            "Nous ne construisons pas<br />
+            des logiciels. Nous créons des<br />
+            <em className="text-secondary">instruments de croissance.</em>"
+          </blockquote>
+
+          <GoldRule />
+
+          <div className="mt-12 grid md:grid-cols-3 gap-12 md:gap-20">
+            {[
+              { title: "Précision", body: "Chaque ligne de code est intentionnelle. Chaque décision architecturale, réfléchie." },
+              { title: "Durabilité", body: "Nous construisons pour le long terme. Pas de raccourcis, pas de compromis techniques." },
+              { title: "Humanité", body: "La technologie au service des personnes. Toujours. Sans exception." },
+            ].map((p, i) => (
+              <div key={i} className="border-t border-border/50 pt-8">
+                <h4 className="text-foreground mb-3 italic" style={{ fontFamily: "var(--font-display)", fontSize: "1.5rem", fontWeight: 400 }}>
+                  {p.title}
+                </h4>
+                <p className="text-muted-foreground font-body text-sm font-light leading-relaxed">
+                  {p.body}
+                </p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ── Celestial DB Product Spotlight ───────────────────────────
+function ProductSpotlightSection() {
+  return (
+    <section className="py-32 lg:py-48 bg-background relative overflow-hidden">
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-secondary/30 to-transparent" />
+
+      <div className="mx-auto max-w-7xl px-6 lg:px-16">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-32 items-center">
+          {/* Left: Product visual */}
+          <motion.div
+            initial={{ opacity: 0, x: -40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1 }}
+            className="order-2 lg:order-1"
+          >
+            {/* Product card — Celestial DB */}
+            <div className="relative">
+              <div className="absolute -inset-4 bg-secondary/5 blur-2xl" />
+              <div className="relative bg-card border border-border shadow-xl overflow-hidden">
+                {/* DB Manager mockup */}
+                <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/50">
+                  <div className="w-2 h-2 rounded-full bg-border" />
+                  <div className="w-2 h-2 rounded-full bg-border" />
+                  <div className="w-2 h-2 rounded-full bg-border" />
+                  <span className="ml-3 text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-body">
+                    Celestial DB — Workspace
+                  </span>
+                </div>
+
+                <div className="p-6 space-y-3">
+                  {/* Simulated workspace list */}
+                  {["Équipe Commerciale", "Infrastructure IT", "R&D & Innovation"].map((ws, i) => (
+                    <motion.div
+                      key={ws}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.3 + i * 0.15 }}
+                      className={`flex items-center justify-between p-4 border ${i === 1 ? "border-secondary/30 bg-secondary/5" : "border-border/50"} group cursor-default`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${i === 1 ? "bg-secondary animate-pulse" : "bg-muted-foreground/30"}`} />
+                        <span className="text-foreground font-body text-sm">{ws}</span>
+                      </div>
+                      <span className={`text-[10px] tracking-wider uppercase font-body ${i === 1 ? "text-secondary" : "text-muted-foreground"}`}>
+                        {i === 1 ? "Actif" : "3 membres"}
+                      </span>
+                    </motion.div>
+                  ))}
+
+                  <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
+                    <span className="text-muted-foreground font-body text-[11px]">3 espaces de travail</span>
+                    <span className="text-secondary font-body text-[11px] tracking-wider uppercase">Voir tout →</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Right: Copy */}
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1 }}
+            className="order-1 lg:order-2"
+          >
+            <EyebrowLabel>Produit phare</EyebrowLabel>
+            <h2 className="text-foreground mb-6">
+              Celestial DB —<br /><em className="text-secondary">la gestion de données réinventée.</em>
+            </h2>
+            <GoldRule />
+            <p className="mt-8 text-muted-foreground font-body text-lg font-light leading-relaxed mb-10">
+              Un SaaS de gestion de bases de données multi-comptes avec workspaces, rôles, permissions granulaires et messagerie temps-réel. Pensé pour les équipes qui exigent la précision.
+            </p>
+
+            <div className="space-y-4 mb-12">
+              {[
+                "Workspaces isolés par équipe",
+                "Permissions granulaires par rôle",
+                "Explorateur de tables intégré",
+                "Messagerie temps-réel",
+              ].map((f, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <div className="w-4 h-px bg-secondary" />
+                  <span className="text-foreground font-body text-sm">{f}</span>
+                </div>
+              ))}
+            </div>
+
+            <Link to="/offres"
+              className="group inline-flex items-center gap-3 border border-foreground/20 px-8 py-4 font-body text-sm tracking-wide text-foreground hover:border-secondary hover:text-secondary transition-all duration-300">
+              Découvrir les offres
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Updates / Pulsations ──────────────────────────────────────
+function UpdatesSection() {
   const [recentChanges, setRecentChanges] = useState<any[]>([]);
 
   useEffect(() => {
@@ -162,259 +465,105 @@ function HomeContent() {
     fetchHomeUpdates();
   }, []);
 
+  if (recentChanges.length === 0) return null;
+
   return (
-    <div className="relative">
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center pt-20 overflow-hidden bg-background">
-        <TechAnimation />
-        <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-border/50 to-transparent" />
-        
-        <div className="relative mx-auto max-w-7xl px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted border border-border/50 text-muted-foreground mb-10 hover:border-primary/30 transition-colors cursor-default">
-              <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
-              <span className="text-xs font-black uppercase tracking-[0.2em]">Celestial OS v2.4 est en ligne</span>
-            </div>
-            
-            <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black mb-6 sm:mb-8 leading-[0.9] tracking-tighter">
-              L'Informatique <br />
-              <span className="text-primary italic">Redéfinie.</span>
-            </h1>
-            
-            <p className="text-base sm:text-xl text-muted-foreground/80 max-w-2xl mx-auto mb-8 sm:mb-12 font-medium leading-relaxed">
-              Nous créons des écosystèmes numériques d'exception. <br className="hidden lg:block" /> 
-              De la documentation intelligente aux SaaS haute performance.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16 sm:mb-24">
-              <Button href="/offres" size="lg" className="px-10 py-5 text-base font-black">
-                Lancer un projet
-                <ChevronRight className="w-5 h-5 ml-2" />
-              </Button>
-              <Button href="/documentation" variant="outline" size="lg" className="px-10 py-5 text-base font-black border-border/50">
-                Explorez l'univers
-              </Button>
-            </div>
+    <section className="py-24 lg:py-32 bg-muted/50 relative">
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
-            {/* Simple Stats Bar */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-12 max-w-4xl mx-auto border-t border-border/20 pt-10 md:pt-16">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center group cursor-default">
-                  <div className="text-3xl font-black tracking-tighter mb-2 group-hover:text-primary transition-colors">
-                    {stat.value}
-                  </div>
-                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="py-24 lg:py-40 relative">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="text-center mb-16 md:mb-32 relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-4xl sm:text-5xl font-black mb-6 tracking-tighter">Éprouvé par l'excellence.</h2>
-              <p className="text-lg text-muted-foreground max-w-xl mx-auto font-medium">Tout ce qu'il vous faut pour dominer votre marché digital.</p>
-            </motion.div>
+      <div className="mx-auto max-w-7xl px-6 lg:px-16">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-16">
+          <div>
+            <EyebrowLabel>Journal</EyebrowLabel>
+            <h2 className="text-foreground text-3xl md:text-4xl">Pulsations.</h2>
           </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
-            {features.map((feature, index) => (
-              <Card key={index} hover className="h-full border-border/30 bg-card/40 backdrop-blur-sm group/feature">
-                <CardHeader>
-                  <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-8 border border-border/50 group-hover/feature:bg-primary group-hover/feature:text-white transition-all duration-500">
-                    <feature.icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-2xl font-black tracking-tight mb-4 group-hover/feature:text-primary transition-colors">{feature.title}</h3>
-                  <p className="text-muted-foreground/80 leading-relaxed font-medium">{feature.description}</p>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
+          <Link to="/changelog"
+            className="flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase text-secondary font-body hover:gap-4 transition-all">
+            Tout voir <ArrowRight className="w-3 h-3" />
+          </Link>
         </div>
-      </section>
 
-      {/* Code Showcase - Premium Version */}
-      <section className="py-24 lg:py-40 bg-muted/20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.05),transparent_50%)]" />
-        <div className="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-24 items-center">
+        <div className="grid sm:grid-cols-3 gap-0 border border-border/50">
+          {recentChanges.map((c, i) => (
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              key={i}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="p-8 border-r border-border/50 last:border-r-0 group hover:bg-background/80 transition-all duration-300"
             >
-              <h2 className="text-4xl sm:text-5xl font-black mb-8 tracking-tighter">
-                Un langage <br /> de confiance.
-              </h2>
-              <p className="text-xl text-muted-foreground/80 mb-10 font-medium leading-relaxed">
-                Nos architectures reposent sur des fondations solides. <br />
-                Stables, pérennes et hautement performantes.
-              </p>
-              
-              <div className="space-y-6 mb-12">
-                {[
-                  "Standards de code militaires",
-                  "Tests de charge en temps réel",
-                  "Intelligence distribuée",
-                ].map((item, index) => (
-                  <div key={index} className="flex items-center gap-4 group">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                      <Check className="w-5 h-5" />
-                    </div>
-                    <span className="text-lg font-bold tracking-tight">{item}</span>
-                  </div>
-                ))}
+              <div className="text-[10px] tracking-[0.2em] uppercase text-secondary mb-4 font-body">
+                {c.date ? format(new Date(c.date), "dd MMM yyyy") : ""}
               </div>
-
-              <Button href="/documentation" size="lg" className="px-10 py-5 font-black uppercase tracking-tighter">
-                Voir la doc technique
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
+              <div className="text-foreground mb-3 font-body text-sm font-medium">Version {c.version}</div>
+              <p className="text-muted-foreground font-body text-sm font-light leading-relaxed line-clamp-3">
+                {c.changes}
+              </p>
+              <Link to="/changelog" className="mt-6 text-[9px] tracking-[0.2em] uppercase text-muted-foreground/50 group-hover:text-secondary font-body transition-colors flex items-center gap-2">
+                Détails <ChevronRight className="w-3 h-3" />
+              </Link>
             </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, rotateY: 20 }}
-              whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            >
-              <Card className="p-1 border-primary/20 bg-primary/5 shadow-2xl">
-                <div className="bg-card rounded-2xl overflow-hidden border border-border/50">
-                   <div className="flex items-center justify-between px-6 py-4 bg-muted border-b border-border/50">
-                      <div className="flex gap-2">
-                         <div className="w-3 h-3 rounded-full bg-red-400/30" />
-                         <div className="w-3 h-3 rounded-full bg-yellow-400/30" />
-                         <div className="w-3 h-3 rounded-full bg-green-400/30" />
-                      </div>
-                      <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 shrink-0">Celestial Core v2.0</div>
-                   </div>
-                   <div className="p-4 sm:p-8 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto text-muted-foreground bg-[#020202]">
-                      <div className="mb-2"><span className="text-primary font-bold">program</span> Celestial_Excellence;</div>
-                      <div className="mb-2 text-muted-foreground/30"><span className="text-accent underline">uses</span> SysUtils, Network, Security;</div>
-                      <br />
-                      <div className="flex gap-4">
-                         <span className="text-muted-foreground/20">01</span>
-                         <span><span className="text-primary font-bold">begin</span></span>
-                      </div>
-                      <div className="flex gap-4">
-                         <span className="text-muted-foreground/20">02</span>
-                         <span className="pl-4 italic text-muted-foreground/40">// Optimizing client reach</span>
-                      </div>
-                      <div className="flex gap-4">
-                         <span className="text-muted-foreground/20">03</span>
-                         <span className="pl-4"><span className="text-foreground">App</span>.Connect(<span className="text-primary">Stripe_Global</span>);</span>
-                      </div>
-                      <div className="flex gap-4">
-                         <span className="text-muted-foreground/20">04</span>
-                         <span className="pl-4"><span className="text-foreground">Security</span>.ApplyLayer(<span className="text-accent">AES_256</span>);</span>
-                      </div>
-                      <div className="flex gap-4">
-                         <span className="text-muted-foreground/20">05</span>
-                         <span className="pl-4 italic text-muted-foreground/40">// Boosting visual prestige</span>
-                      </div>
-                      <div className="flex gap-4">
-                         <span className="text-muted-foreground/20">06</span>
-                         <span className="pl-4"><span className="text-foreground">UI</span>.Render(<span className="text-primary">Premium_Design</span>);</span>
-                      </div>
-                      <div className="flex gap-4">
-                         <span className="text-muted-foreground/20">07</span>
-                         <span className="pl-0"><span className="text-primary font-bold">end</span>.</span>
-                      </div>
-                      <motion.div 
-                       animate={{ opacity: [0, 1, 0] }}
-                       transition={{ duration: 0.8, repeat: Infinity }}
-                       className="w-2 h-4 bg-primary mt-4 ml-10 rounded-sm" 
-                      />
-                   </div>
-                </div>
-              </Card>
-            </motion.div>
-          </div>
+          ))}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* New Feed / Changelog Mini-Section */}
-      <section className="py-16 lg:py-24 bg-background">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 sm:mb-16 border-l-4 border-primary pl-6 sm:pl-10 gap-4">
-            <div>
-              <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-2">Pulsations.</h2>
-              <p className="text-muted-foreground uppercase text-xs font-black tracking-widest opacity-60">L'évolution constante de Celestial</p>
-            </div>
-            <Link to="/changelog" className="text-xs font-black uppercase tracking-widest text-primary hover:tracking-[.2em] transition-all flex items-center gap-3 shrink-0">
-              Voir tout
-              <ArrowRight className="w-4 h-4" />
+// ── CTA Final ─────────────────────────────────────────────────
+function CtaSection() {
+  return (
+    <section className="py-32 lg:py-60 bg-muted/20 relative overflow-hidden border-t border-border/50">
+      {/* Gold gradient */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 opacity-[0.03]"
+          style={{ background: "radial-gradient(ellipse at 50% 100%, var(--color-secondary) 0%, transparent 60%)" }} />
+      </div>
+
+      <div className="mx-auto max-w-5xl px-6 lg:px-16 text-center relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1 }}
+        >
+          <EyebrowLabel>Commençons</EyebrowLabel>
+          <h2 className="text-foreground mb-6"
+            style={{ fontFamily: "var(--font-display)", fontWeight: 300, fontSize: "clamp(2.5rem, 7vw, 6rem)", letterSpacing: "-0.03em", lineHeight: 1 }}>
+            Vivez l'expérience<br /><em className="text-secondary">Celestial.</em>
+          </h2>
+          <GoldRule />
+          <p className="mt-10 text-muted-foreground font-body text-lg font-light max-w-xl mx-auto leading-relaxed mb-14">
+            Rejoignez les entreprises qui ont choisi l'excellence. Parlons de votre prochaine révolution numérique.
+          </p>
+          <div className="flex flex-wrap justify-center gap-6">
+            <button onClick={() => openWizard()}
+              className="group px-10 py-4 bg-secondary text-secondary-foreground font-body font-medium text-sm tracking-wide hover:bg-secondary/90 transition-all flex items-center gap-3">
+              Lancer la Phase 1
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+            <Link to="/offres"
+              className="px-10 py-4 border border-border text-foreground font-body text-sm tracking-wide hover:border-secondary hover:text-secondary bg-background transition-all">
+              Voir les offres
             </Link>
           </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
 
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
-            {recentChanges.map((change, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card hover className="h-full border-border/30 bg-muted/10 p-8 flex flex-col group/item">
-                   <div className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">{change.date ? format(new Date(change.date), "dd/MM/yyyy") : ""}</div>
-                   <h4 className="text-xl font-black tracking-tight mb-4 group-hover/item:text-primary transition-colors">Version {change.version}</h4>
-                   <p className="text-sm text-muted-foreground line-clamp-3 font-medium leading-relaxed mb-6">{change.changes}</p>
-                   <Link to="/changelog" className="mt-auto text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 group-hover/item:text-foreground transition-all">
-                      Détails <ChevronRight className="w-3 h-3" />
-                   </Link>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Monumental CTA */}
-      <section className="py-20 sm:py-32 lg:py-60 relative overflow-hidden">
-        <div className="absolute inset-0 bg-primary/5" />
-        <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-primary/30 to-transparent" />
-        
-        <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black mb-8 sm:mb-12 tracking-tighter">
-              Vivez l'expérience <br className="hidden sm:block" /> <span className="text-primary italic">Celestial.</span>
-            </h2>
-            <p className="text-xl text-muted-foreground/80 mb-16 max-w-2xl mx-auto font-medium">
-              Rejoignez les entreprises qui ont choisi le futur. <br />
-              Parlons de votre prochaine révolution numérique.
-            </p>
-            <div className="flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-6 justify-center">
-              <Button href="/contact" size="lg" className="px-10 sm:px-16 py-5 sm:py-6 text-base sm:text-lg font-black rounded-3xl">
-                Lancer la Phase 1
-              </Button>
-              <Button href="/offres" variant="outline" size="lg" className="px-10 sm:px-16 py-5 sm:py-6 text-base sm:text-lg font-black rounded-3xl border-border/50">
-                Voir les Plans
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-        
-        <div className="absolute bottom-0 inset-x-0 h-px bg-linear-to-r from-transparent via-primary/30 to-transparent" />
-      </section>
+// ── Assembly ──────────────────────────────────────────────────
+function HomeContent() {
+  return (
+    <div>
+      <HeroSection />
+      <ServicesSection />
+      <StatementSection />
+      <ProductSpotlightSection />
+      <UpdatesSection />
+      <CtaSection />
     </div>
   );
 }

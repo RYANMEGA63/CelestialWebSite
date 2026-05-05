@@ -1,9 +1,9 @@
 import { Link } from "react-router";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 
-// Icônes SVG des réseaux sociaux
+// Social SVG Icons
 const SocialIcons: Record<string, React.FC<{ className?: string }>> = {
   facebook: ({ className }) => (
     <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -38,12 +38,12 @@ const SocialIcons: Record<string, React.FC<{ className?: string }>> = {
 };
 
 const SOCIAL_KEYS = [
-  { key: "social_facebook", label: "Facebook", icon: "facebook" },
-  { key: "social_messenger", label: "Messenger", icon: "messenger" },
-  { key: "social_instagram", label: "Instagram", icon: "instagram" },
-  { key: "social_linkedin", label: "LinkedIn", icon: "linkedin" },
-  { key: "social_whatsapp", label: "WhatsApp", icon: "whatsapp" },
-  { key: "social_x", label: "X (Twitter)", icon: "x" },
+  { key: "social_facebook",  label: "Facebook",    icon: "facebook"  },
+  { key: "social_messenger", label: "Messenger",   icon: "messenger" },
+  { key: "social_instagram", label: "Instagram",   icon: "instagram" },
+  { key: "social_linkedin",  label: "LinkedIn",    icon: "linkedin"  },
+  { key: "social_whatsapp",  label: "WhatsApp",    icon: "whatsapp"  },
+  { key: "social_x",         label: "X (Twitter)", icon: "x"         },
 ];
 
 export function Footer() {
@@ -61,47 +61,58 @@ export function Footer() {
   const activeSocials = SOCIAL_KEYS.filter(s => settings[s.key]);
 
   return (
-    <footer className="border-t border-border/20 bg-background pt-12 sm:pt-24 pb-8 sm:pb-12 relative overflow-hidden">
-      {/* Background Glow */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-64 bg-primary/5 blur-[120px] pointer-events-none" />
-      
-      <div className="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-16 lg:grid-cols-4 items-start">
-          {/* Company Info */}
-          <div className="space-y-8 col-span-1 lg:col-span-1">
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="relative bg-linear-to-br from-primary to-secondary p-2 rounded-xl group-hover:scale-110 transition-transform shadow-lg shadow-primary/10">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                </svg>
-              </div>
-              <span className="text-2xl font-black tracking-tighter bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
+    <footer className="bg-foreground border-t border-primary-foreground/10 pt-16 sm:pt-24 pb-8 relative overflow-hidden">
+      {/* Subtle ambient blue glow */}
+      <div
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
+        style={{ background: "radial-gradient(ellipse, rgba(45,125,210,0.06) 0%, transparent 70%)" }}
+      />
+
+      <div className="mx-auto max-w-7xl px-6 lg:px-16 relative z-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 items-start">
+
+          {/* Brand column */}
+          <div className="space-y-8 sm:col-span-2 lg:col-span-1">
+            {/* Wordmark — matches Header */}
+            <Link to="/" className="inline-block">
+              <span
+                className="text-primary-foreground/90 hover:text-primary-foreground transition-colors"
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "1.75rem",
+                  fontWeight: 400,
+                  letterSpacing: "-0.03em",
+                  lineHeight: 1,
+                }}
+              >
                 Celestial
               </span>
             </Link>
-            <p className="text-base text-muted-foreground/80 font-medium leading-relaxed">
-              L'ingénierie logicielle au service des visionnaires. <br />
-              Établir l'excellence comme standard par défaut.
+
+            <p className="font-body text-sm text-primary-foreground/35 leading-relaxed font-light max-w-xs">
+              L'ingénierie logicielle au service des visionnaires algériens. L'excellence comme standard par défaut.
             </p>
 
-            {/* Social Links */}
+            {/* Social links — minimal dots */}
             {activeSocials.length > 0 && (
               <div className="flex flex-wrap gap-3">
                 {activeSocials.map(({ key, label, icon }) => {
                   const SocialIcon = SocialIcons[icon];
                   const href = settings[key];
                   const isWhatsApp = key === "social_whatsapp" && !href.startsWith("http");
-                  const finalHref = isWhatsApp ? `https://wa.me/${href.replace(/\D/g, "")}` : href;
+                  const finalHref = isWhatsApp
+                    ? `https://wa.me/${href.replace(/\D/g, "")}`
+                    : href;
                   return (
                     <a
                       key={key}
                       href={finalHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 rounded-xl bg-muted/50 border border-border/50 hover:bg-primary hover:text-white transition-all hover:-translate-y-1"
+                      className="w-9 h-9 flex items-center justify-center border border-primary-foreground/10 text-primary-foreground/30 hover:border-secondary hover:text-secondary transition-all duration-300"
                       aria-label={label}
                     >
-                      <SocialIcon className="w-5 h-5" />
+                      <SocialIcon className="w-4 h-4" />
                     </a>
                   );
                 })}
@@ -109,19 +120,24 @@ export function Footer() {
             )}
           </div>
 
-          {/* Quick Links */}
-          <div className="lg:pl-12">
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-8">Navigation</h3>
+          {/* Navigation */}
+          <div>
+            <p className="font-body text-[10px] tracking-[0.25em] uppercase text-primary-foreground/25 mb-8">
+              Navigation
+            </p>
             <ul className="space-y-4">
               {[
-                { to: "/", label: "Accueil" },
-                { to: "/a-propos", label: "L'Héritage" },
-                { to: "/offres", label: "Les Solutions" },
-                { to: "/realisations", label: "Portfolio" },
+                { to: "/",            label: "Accueil"      },
+                { to: "/a-propos",    label: "À propos"     },
+                { to: "/offres",      label: "Les offres"   },
+                { to: "/realisations",label: "Portfolio"    },
               ].map(link => (
                 <li key={link.to}>
-                  <Link to={link.to} className="text-sm font-bold text-muted-foreground/60 hover:text-primary transition-colors flex items-center gap-2 group">
-                    <span className="w-0 h-0.5 bg-primary group-hover:w-3 transition-all duration-300" />
+                  <Link
+                    to={link.to}
+                    className="group flex items-center gap-3 font-body text-sm text-primary-foreground/35 hover:text-primary-foreground transition-colors duration-200"
+                  >
+                    <span className="w-0 h-px bg-secondary group-hover:w-4 transition-all duration-300" />
                     {link.label}
                   </Link>
                 </li>
@@ -131,16 +147,21 @@ export function Footer() {
 
           {/* Resources */}
           <div>
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-8">Ressources</h3>
+            <p className="font-body text-[10px] tracking-[0.25em] uppercase text-primary-foreground/25 mb-8">
+              Ressources
+            </p>
             <ul className="space-y-4">
               {[
                 { to: "/documentation", label: "Documentation" },
-                { to: "/changelog", label: "Changelog" },
-                { to: "/contact", label: "Support Élite" },
+                { to: "/changelog",     label: "Changelog"     },
+                { to: "/contact",       label: "Support élite" },
               ].map(link => (
                 <li key={link.to}>
-                  <Link to={link.to} className="text-sm font-bold text-muted-foreground/60 hover:text-primary transition-colors flex items-center gap-2 group">
-                    <span className="w-0 h-0.5 bg-primary group-hover:w-3 transition-all duration-300" />
+                  <Link
+                    to={link.to}
+                    className="group flex items-center gap-3 font-body text-sm text-primary-foreground/35 hover:text-primary-foreground transition-colors duration-200"
+                  >
+                    <span className="w-0 h-px bg-secondary group-hover:w-4 transition-all duration-300" />
                     {link.label}
                   </Link>
                 </li>
@@ -150,54 +171,63 @@ export function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-8">Contact</h3>
-            <ul className="space-y-6">
+            <p className="font-body text-[10px] tracking-[0.25em] uppercase text-primary-foreground/25 mb-8">
+              Contact
+            </p>
+            <ul className="space-y-5">
               {(settings["contact_address_line1"] || settings["contact_address_line2"]) && (
-                <li className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center border border-border/50 group-hover:border-primary/30 transition-colors shrink-0">
-                    <MapPin className="w-4 h-4 text-primary" />
-                  </div>
-                  <span className="text-sm font-medium text-muted-foreground/80 leading-relaxed">
+                <li className="flex items-start gap-3">
+                  <MapPin className="w-3.5 h-3.5 text-secondary mt-0.5 shrink-0" strokeWidth={1.5} />
+                  <span className="font-body text-sm text-primary-foreground/40 leading-relaxed font-light">
                     {settings["contact_address_line1"]}
                     {settings["contact_address_line2"] && <><br />{settings["contact_address_line2"]}</>}
                   </span>
                 </li>
               )}
               {settings["contact_phone_1"] && (
-                <li className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center border border-border/50 group-hover:border-primary/30 transition-colors shrink-0">
-                    <Phone className="w-4 h-4 text-primary" />
-                  </div>
-                  <span className="text-sm font-bold text-muted-foreground/80">{settings["contact_phone_1"]}</span>
+                <li className="flex items-center gap-3">
+                  <Phone className="w-3.5 h-3.5 text-secondary shrink-0" strokeWidth={1.5} />
+                  <span className="font-body text-sm text-primary-foreground/40">{settings["contact_phone_1"]}</span>
                 </li>
               )}
               {settings["contact_email_main"] && (
-                <li className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center border border-border/50 group-hover:border-primary/30 transition-colors shrink-0">
-                    <Mail className="w-4 h-4 text-primary" />
-                  </div>
-                  <span className="text-sm font-bold text-muted-foreground/80">{settings["contact_email_main"]}</span>
+                <li className="flex items-center gap-3">
+                  <Mail className="w-3.5 h-3.5 text-secondary shrink-0" strokeWidth={1.5} />
+                  <span className="font-body text-sm text-primary-foreground/40">{settings["contact_email_main"]}</span>
                 </li>
               )}
             </ul>
+
+            {/* CTA */}
+            <Link
+              to="/contact"
+              className="mt-8 group inline-flex items-center gap-2 font-body text-[11px] tracking-[0.15em] uppercase text-secondary hover:gap-4 transition-all duration-300"
+            >
+              Nous contacter
+              <ArrowRight className="w-3 h-3" />
+            </Link>
           </div>
         </div>
 
-        {/* Legal */}
-        <div className="mt-12 sm:mt-24 pt-8 sm:pt-12 border-t border-border/20 flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-8">
-          <p className="text-xs font-bold text-muted-foreground/40 uppercase tracking-widest">
-            © {currentYear} Celestial Systems. All rights reserved.
+        {/* Bottom bar */}
+        <div className="mt-16 sm:mt-24 pt-8 border-t border-primary-foreground/10 flex flex-col sm:flex-row justify-between items-center gap-6">
+          <p className="font-body text-[11px] text-primary-foreground/20 tracking-[0.1em]">
+            © {currentYear} Celestial Systems. Tous droits réservés.
           </p>
-          <div className="flex flex-wrap justify-center gap-10">
-            <Link to="/mentions-legales" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 hover:text-foreground transition-colors">
-              Mentions légales
-            </Link>
-            <Link to="/confidentialite" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 hover:text-foreground transition-colors">
-              Confidentialité
-            </Link>
-            <Link to="/cgu" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 hover:text-foreground transition-colors">
-              CGU
-            </Link>
+          <div className="flex flex-wrap justify-center gap-8">
+            {[
+              { to: "/mentions-legales", label: "Mentions légales"  },
+              { to: "/confidentialite",  label: "Confidentialité"   },
+              { to: "/cgu",              label: "CGU"               },
+            ].map(l => (
+              <Link
+                key={l.to}
+                to={l.to}
+                className="font-body text-[10px] tracking-[0.15em] uppercase text-primary-foreground/20 hover:text-primary-foreground/50 transition-colors"
+              >
+                {l.label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>

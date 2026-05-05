@@ -88,45 +88,44 @@ export function Documentation() {
 
   // ─── SIDEBAR ────────────────────────────────────────────────
   const SidebarContent = () => (
-    <div className="flex flex-col h-full py-6 px-3" style={{ background: "var(--card)" }}>
+    <div className="flex flex-col h-full py-6 px-0 bg-background">
       {/* Header */}
-      <div className="px-3 mb-6">
-        <div className="flex items-center gap-2.5 mb-1">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, var(--primary), var(--secondary))" }}>
-            <BookOpen className="w-3.5 h-3.5 text-white" />
+      <div className="px-6 mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-8 h-8 flex items-center justify-center bg-foreground text-background">
+            <BookOpen className="w-4 h-4" />
           </div>
-          <span className="text-sm font-black tracking-tight" style={{ color: "var(--foreground)" }}>
+          <span className="text-base font-black tracking-tighter uppercase text-foreground">
             Documentation
           </span>
         </div>
-        <p className="text-[11px] ml-9" style={{ color: "var(--muted-foreground)" }}>
-          {categories.length} thèmes · {docs.length} guides
+        <p className="text-xs font-mono text-muted-foreground ml-11">
+          {categories.length} THEMES / {docs.length} GUIDES
         </p>
       </div>
 
       {/* Search */}
-      <div className="px-2 mb-5">
+      <div className="px-6 mb-6">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "var(--muted-foreground)" }} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Rechercher..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setSelectedDoc(null); }}
-            className="w-full pl-9 pr-3 py-2 rounded-xl text-xs outline-none border transition-all"
-            style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
+            className="w-full pl-10 pr-4 py-2.5 text-xs font-mono outline-none border-2 border-border bg-background text-foreground focus:border-foreground transition-none"
           />
         </div>
       </div>
 
       {/* Nav */}
-      <p className="text-[9px] font-black uppercase tracking-[0.2em] px-3 mb-2" style={{ color: "var(--muted-foreground)" }}>
+      <p className="text-[10px] font-mono font-bold uppercase tracking-widest px-6 mb-3 text-muted-foreground">
         Thèmes
       </p>
-      <nav className="flex-1 overflow-y-auto space-y-0.5 no-scrollbar">
+      <nav className="flex-1 overflow-y-auto space-y-0 no-scrollbar">
         {loading
           ? Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-10 rounded-xl animate-pulse mx-1" style={{ background: "var(--muted)" }} />
+              <div key={i} className="h-10 animate-pulse border-b border-border/50 mx-6 bg-muted/50" />
             ))
           : categories.map((cat) => {
               const Icon = getCategoryIcon(cat.id);
@@ -136,25 +135,15 @@ export function Documentation() {
                 <button
                   key={cat.id}
                   onClick={() => handleSelectCategory(cat.id)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150"
-                  style={{
-                    background: isActive ? "var(--primary)" : "transparent",
-                    color: isActive ? "#fff" : "var(--muted-foreground)",
-                  }}
-                  onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = "var(--muted)"; }}
-                  onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                  className={`w-full flex items-center gap-3 px-6 py-3 text-left transition-none border-l-4 ${
+                    isActive ? "border-primary bg-muted/30 text-foreground" : "border-transparent text-muted-foreground hover:bg-muted/10 hover:text-foreground"
+                  }`}
                 >
-                  <Icon className="w-4 h-4 shrink-0" style={{ opacity: isActive ? 1 : 0.6 }} />
-                  <span className="text-sm font-semibold flex-1 truncate" style={{ color: isActive ? "#fff" : "var(--foreground)" }}>
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="text-sm font-semibold flex-1 truncate">
                     {cat.label}
                   </span>
-                  <span
-                    className="text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0 tabular-nums"
-                    style={{
-                      background: isActive ? "rgba(255,255,255,0.2)" : "var(--muted)",
-                      color: isActive ? "#fff" : "var(--muted-foreground)",
-                    }}
-                  >
+                  <span className="text-[10px] font-mono px-2 py-0.5 bg-muted text-foreground shrink-0">
                     {count}
                   </span>
                 </button>
@@ -166,36 +155,36 @@ export function Documentation() {
 
   // ─── LISTE DES PAGES ────────────────────────────────────────
   const PagesList = () => (
-    <div className="flex-1 overflow-y-auto p-6">
-      <motion.div key={activeCategory} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="mb-6">
+    <div className="flex-1 overflow-y-auto p-8 lg:p-12">
+      <motion.div key={activeCategory} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="mb-10">
         {activeCat && (
           <>
-            <nav className="flex items-center gap-2 mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">
-              <span>Documentation</span>
-              <ChevronRight className="w-3 h-3" />
-              <span className="text-foreground/60">{activeCat.label}</span>
+            <nav className="flex items-center gap-2 mb-6 text-xs font-mono uppercase text-muted-foreground">
+              <span>Docs</span>
+              <span className="text-border">/</span>
+              <span className="text-foreground">{activeCat.label}</span>
             </nav>
 
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-4 mb-4">
               {(() => {
                 const Icon = getCategoryIcon(activeCat.id);
                 return (
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border border-primary/20 bg-primary/5">
-                    <Icon className="w-4 h-4 text-primary" />
+                  <div className="w-12 h-12 flex items-center justify-center shrink-0 border-2 border-primary text-primary">
+                    <Icon className="w-6 h-6" />
                   </div>
                 );
               })()}
               <div>
-                <h1 className="text-xl font-black tracking-tight" style={{ color: "var(--foreground)" }}>
+                <h1 className="text-3xl font-black tracking-tighter uppercase text-foreground">
                   {activeCat.label}
                 </h1>
-                <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                  {visibleDocs.length} guide{visibleDocs.length !== 1 ? "s" : ""}
-                  {search ? ` pour "${search}"` : ""}
+                <p className="text-sm font-mono text-muted-foreground mt-1">
+                  {visibleDocs.length} GUIDE{visibleDocs.length !== 1 ? "S" : ""}
+                  {search ? ` FOR "${search.toUpperCase()}"` : ""}
                 </p>
               </div>
             </div>
-            <div className="h-px mt-4" style={{ background: "var(--border)" }} />
+            <div className="h-0.5 w-full bg-border mt-8" />
           </>
         )}
       </motion.div>
@@ -206,7 +195,7 @@ export function Documentation() {
           <p className="font-semibold text-sm">Aucun guide correspondant</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="flex flex-col border-t border-border">
           <AnimatePresence mode="popLayout">
             {visibleDocs.map((doc, i) => (
               <motion.button
@@ -216,25 +205,22 @@ export function Documentation() {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ delay: i * 0.035, duration: 0.18 }}
                 onClick={() => setSelectedDoc(doc)}
-                className="group text-left p-4 rounded-xl border bg-card/30 hover:bg-card hover:border-primary/30 hover:shadow-md transition-all duration-200"
-                style={{ borderColor: "var(--border)" }}
+                className="group text-left p-6 border-b border-border bg-background hover:bg-muted/30 transition-none flex flex-col sm:flex-row sm:items-center gap-4"
               >
-                <div className="flex flex-col h-full">
-                   <div className="flex items-start justify-between mb-3">
-                     <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                        <FileText className="w-4 h-4 text-muted-foreground/40 group-hover:text-primary" />
-                     </div>
-                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest">
-                        <Clock className="w-3 h-3" />
-                        {doc.time}
-                     </div>
+                <div className="flex-1">
+                   <div className="flex items-center gap-3 mb-2">
+                     <FileText className="w-4 h-4 text-primary" />
+                     <h3 className="text-lg font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
+                       {doc.title}
+                     </h3>
                    </div>
-                   <h3 className="text-sm font-black tracking-tight group-hover:text-primary transition-colors mb-1">
-                     {doc.title}
-                   </h3>
-                   <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                   <p className="text-sm text-muted-foreground line-clamp-2 sm:line-clamp-1 ml-7">
                      {doc.description}
                    </p>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground shrink-0 sm:ml-auto ml-7">
+                   <Clock className="w-3.5 h-3.5" />
+                   {doc.time}
                 </div>
               </motion.button>
             ))}
@@ -254,22 +240,26 @@ export function Documentation() {
 
     return (
       <div className="flex-1 h-full flex flex-col overflow-hidden">
-        {/* Breadcrumb & Sub-nav sticky */}
-        <div className="shrink-0 border-b bg-background/80 backdrop-blur-md z-40" style={{ borderColor: "var(--border)" }}>
-           <div className="px-6 py-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">
-              <button onClick={() => setSelectedDoc(null)} className="hover:text-foreground transition-colors">Documentation</button>
-              <ChevronRight className="w-3 h-3" />
-              <button onClick={() => setSelectedDoc(null)} className="hover:text-foreground transition-colors">{activeCat?.label}</button>
-              <ChevronRight className="w-3 h-3" />
-              <span className="text-primary truncate">{selectedDoc.title}</span>
+        {/* NPM-style Header Navbar */}
+        <div className="shrink-0 border-b-2 border-border bg-background z-40">
+           <div className="px-8 py-5 flex items-center gap-3 text-xs font-mono uppercase text-muted-foreground">
+              <button onClick={() => setSelectedDoc(null)} className="hover:text-foreground transition-colors font-bold">Docs</button>
+              <span className="text-border">/</span>
+              <button onClick={() => setSelectedDoc(null)} className="hover:text-foreground transition-colors font-bold">{activeCat?.label}</button>
+              <span className="text-border">/</span>
+              <span className="text-foreground font-black bg-muted px-2 py-0.5">{selectedDoc.title}</span>
            </div>
            
-           <div className="px-4 pb-0 flex gap-1 overflow-x-auto no-scrollbar">
+           <div className="px-8 pb-0 flex gap-6 overflow-x-auto no-scrollbar border-t border-border">
               {siblingDocs.map(d => (
                 <button
                   key={d.id}
                   onClick={() => setSelectedDoc(d)}
-                  className={`px-4 py-3 text-[11px] font-black uppercase tracking-widest border-b-2 transition-all shrink-0 ${d.id === selectedDoc.id ? "border-primary text-primary" : "border-transparent text-muted-foreground/40 hover:text-foreground hover:border-border"}`}
+                  className={`py-4 text-xs font-bold uppercase tracking-widest border-b-[3px] transition-none shrink-0 ${
+                    d.id === selectedDoc.id 
+                      ? "border-foreground text-foreground" 
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                  }`}
                 >
                   {d.title}
                 </button>
