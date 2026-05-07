@@ -8,7 +8,6 @@ import {
   Menu,
   X,
   Layout,
-  BookOpen,
   Code2,
   ArrowLeft,
   Hash,
@@ -19,6 +18,7 @@ import {
   EyeOff,
   Image as ImageIcon
 } from "lucide-react";
+
 import { Skeleton } from "../components/Skeleton";
 import { type DocPageData } from "./Documentation";
 import { supabase } from "../../lib/supabase";
@@ -37,7 +37,7 @@ export function DocPage({ doc, categoryLabel, onBack, prevDoc, nextDoc, embedded
   const [tocOpen, setTocOpen] = useState(false);
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mediaSize, setMediaSize] = useState<'xs' | 'sm' | 'md' | 'lg'>('md');
+  const [mediaSize, setMediaSize] = useState<'xs' | 'sm' | 'md' | 'lg'>('xs');
   const [hideImages, setHideImages] = useState(false);
   const [blockConfigs, setBlockConfigs] = useState<Record<string, { size: string, hidden: boolean }>>({});
   const sectionRefs = useRef<Record<string, HTMLElement>>({});
@@ -148,37 +148,10 @@ export function DocPage({ doc, categoryLabel, onBack, prevDoc, nextDoc, embedded
 
   return (
        <div className={`${embedded ? "" : "min-h-screen bg-background"} selection:bg-primary/20`}>
-         {/* Sidebar TOC (Sommaire) */}
-         {!embedded && (<aside className="fixed right-0 top-0 bottom-0 z-40 hidden xl:flex flex-col w-72 border-l border-border bg-background pt-32">
-            <div className="px-8 pb-4 mb-4 border-b border-border/50">
-               <div className="flex items-center gap-3">
-                  <div className="p-1 bg-foreground text-background">
-                     <BookOpen className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-xs font-mono uppercase font-bold text-foreground">Sommaire</h4>
-               </div>
-            </div>
-            <nav className="flex-1 overflow-y-auto px-8 pb-8 space-y-1 no-scrollbar">
-                  {sections.map((section, idx) => (
-                    <div key={section.id} className="space-y-2">
-                      <button
-                        onClick={() => scrollTo(section.id)}
-                        className={`w-full text-left py-1 text-[11px] font-black transition-all flex items-start gap-3 group/item ${
-                          activeId === section.id ? "text-primary" : "text-muted-foreground/40 hover:text-foreground"
-                        }`}
-                      >
-                        <span className={`tabular-nums italic text-[12px] ${activeId === section.id ? "text-primary" : "text-muted-foreground/10"}`}>
-                          {(idx + 1).toString().padStart(2, '0')}
-                        </span>
-                        <span className={activeId === section.id ? "" : "group-hover/item:translate-x-1 transition-transform"}>{section.title}</span>
-                      </button>
-                    </div>
-                  ))}
-            </nav>
-         </aside>)}
+         {/* TOC sidebar removed — content extends full width */}
   
          {/* Main Content Area */}
-         <div className={`px-6 sm:px-12 xl:pr-80 ${embedded ? "pt-8 pb-16" : "pt-32 pb-48 max-w-7xl mx-auto"}`}>
+         <div className={`px-6 sm:px-12 ${embedded ? "pt-8 pb-16" : "pt-32 pb-48 max-w-7xl mx-auto"}`}>
            <motion.header 
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
@@ -233,7 +206,7 @@ export function DocPage({ doc, categoryLabel, onBack, prevDoc, nextDoc, embedded
                        {categoryLabel}
                      </span>
                    </div>
-                   <h1 className="text-2xl font-black tracking-tight text-foreground leading-tight mb-1">
+                   <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-foreground leading-tight mb-2">
                      {doc.title}
                    </h1>
                    <p className="text-sm text-muted-foreground font-medium leading-relaxed">
@@ -265,7 +238,7 @@ export function DocPage({ doc, categoryLabel, onBack, prevDoc, nextDoc, embedded
              </div>
            </motion.header>
   
-           <main className="space-y-6">
+           <main>
              {sections.map((section, sIdx) => (
                <motion.section
                  key={section.id}
@@ -276,29 +249,105 @@ export function DocPage({ doc, categoryLabel, onBack, prevDoc, nextDoc, embedded
                  viewport={{ once: true, margin: "-100px" }}
                  className="scroll-mt-32"
                >
-                 <div className="flex items-center gap-4 mb-8">
-                    <h2 className="text-2xl font-black tracking-tight text-foreground">
-                      {section.title}
-                    </h2>
-                    <div className="h-px flex-1 bg-border/20" />
-                 </div>
-  
+                 <h2 className="text-3xl sm:text-4xl font-black italic text-foreground mb-8 pb-4">
+                   {section.title}
+                 </h2>
                  <div className="space-y-4">
                    {section.docs_subsections?.map((sub: any) => {
                      // Check for component markers
                      const isStep = sub.title && /^\d+[\.\)]/.test(sub.title);
                      const isCallout = sub.content && sub.content.startsWith('::');
+                     const isList = sub.type === 'list';
+                      const isStepByStep = sub.type === 'step_by_step';
                      
                      return (
                        <div key={sub.id} id={sub.id} ref={setRef(sub.id)} className="scroll-mt-24 space-y-6 group/sub">
                          {sub.title && sub.title !== "Nouveau Bloc" && (
-                           <h3 className={`font-black flex items-center gap-3 transition-colors ${isStep ? "text-lg text-primary" : "text-base text-foreground group-hover/sub:text-primary"}`}>
+                           <h3 className={`font-black flex items-center gap-3 transition-colors ${isStep ? "text-xl text-primary" : "text-2xl text-foreground group-hover/sub:text-primary"}`}>
                              {isStep && <span className="flex-shrink-0 w-8 h-8 rounded-full border-2 border-primary flex items-center justify-center text-xs">{sub.title.match(/^\d+/)?.[0]}</span>}
                              {isStep ? sub.title.replace(/^\d+[\.\)]\s*/, '') : sub.title}
                            </h3>
                          )}
+
+                         {isList && sub.content && (
+                           <ul className="space-y-2 max-w-3xl">
+                             {sub.content.split('\n').filter((l: string) => l.trim()).map((line: string, i: number) => (
+                               <li key={i} className="flex items-start gap-3 text-base text-muted-foreground font-medium">
+                                 <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-2" />
+                                 {line.replace(/^[-*•]\s*/, '')}
+                               </li>
+                             ))}
+                           </ul>
+                         )}
   
-                         {sub.content && (() => {
+                         {isStepByStep && sub.content && (() => {
+                             let steps: any[] = [];
+                             try { steps = JSON.parse(sub.content || '[]'); } catch(e) {}
+                             if (!Array.isArray(steps)) steps = [];
+                             
+                             return (
+                               <div className="space-y-12 my-8">
+                                 {steps.map((step, idx) => (
+                                   <div key={idx} className="flex gap-4 sm:gap-6 items-start">
+                                      <div className="w-10 h-10 shrink-0 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-black text-lg mt-0.5">
+                                        {idx + 1}
+                                      </div>
+                                      <div className="flex-1 space-y-4">
+                                        {step.title && <h4 className="text-xl font-bold text-foreground pt-1.5">{step.title}</h4>}
+                                        {step.desc && <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{step.desc}</p>}
+                                        {step.img && (() => {
+                                          const stepImgId = `${sub.id}-step-${idx}`;
+                                          const config = blockConfigs[stepImgId] || { size: mediaSize, hidden: false };
+                                          if (config.hidden || hideImages) {
+                                            return (
+                                              <button
+                                                onClick={() => { if (hideImages) setHideImages(false); else updateBlockConfig(stepImgId, { hidden: false }); }}
+                                                className="flex items-center gap-2 text-[10px] font-black text-muted-foreground/40 hover:text-primary transition-colors py-1"
+                                              >
+                                                <Eye className="w-3.5 h-3.5" />
+                                                {hideImages ? "Images masquées globalement" : "Afficher la photo"}
+                                              </button>
+                                            );
+                                          }
+                                          return (
+                                            <div className="w-full relative group/box mt-4">
+                                              <div className="flex items-center gap-2 mb-2 opacity-0 group-hover/box:opacity-100 transition-opacity">
+                                                {['xs', 'sm', 'md', 'lg'].map((s) => (
+                                                  <button
+                                                    key={s}
+                                                    onClick={() => updateBlockConfig(stepImgId, { size: s as any })}
+                                                    className={`px-2 py-0.5 rounded text-[9px] font-black uppercase transition-all ${
+                                                      config.size === s ? "bg-primary text-white" : "text-muted-foreground/40 hover:bg-muted"
+                                                    }`}
+                                                  >{s}</button>
+                                                ))}
+                                                <button
+                                                  onClick={() => updateBlockConfig(stepImgId, { hidden: true })}
+                                                  className="ml-auto flex items-center gap-1 text-[9px] font-black uppercase text-muted-foreground/30 hover:text-red-400 transition-colors"
+                                                >
+                                                  <EyeOff className="w-3 h-3" /> Masquer
+                                                </button>
+                                              </div>
+                                              <motion.figure
+                                                className={`rounded-2xl overflow-hidden border border-border/50 bg-muted/20 transition-all duration-500 ${
+                                                  config.size === 'xs' ? 'max-w-xs' :
+                                                  config.size === 'sm' ? 'max-w-md' :
+                                                  config.size === 'md' ? 'max-w-2xl' : 'max-w-full'
+                                                }`}
+                                              >
+                                                <img src={step.img} alt={step.title || `Étape ${idx + 1}`} className="w-full h-auto object-cover hover:scale-105 transition-transform duration-500" />
+                                              </motion.figure>
+                                            </div>
+                                          );
+                                        })()}
+                                      </div>
+                                    </div>
+                                 ))}
+                               </div>
+                             );
+                          })()}
+
+                          {!isList && !isStepByStep && sub.content && (() => {
                             if (isCallout) {
                               const type = sub.content.split('\n')[0].replace('::', '').toLowerCase();
                               const text = sub.content.split('\n').slice(1).join('\n');
@@ -405,6 +454,12 @@ export function DocPage({ doc, categoryLabel, onBack, prevDoc, nextDoc, embedded
                                </div>
                             );
                          })()}
+                         
+                         {sub.type === 'hr' && (
+                            <div className="py-12 flex items-center justify-center">
+                              <div className="w-full h-[2px] bg-[#000000]"></div>
+                            </div>
+                         )}
                        </div>
                      );
                    })}

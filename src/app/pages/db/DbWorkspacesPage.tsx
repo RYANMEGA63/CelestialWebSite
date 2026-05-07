@@ -90,6 +90,10 @@ export function DbWorkspacesPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!authUser?.isAdmin) {
+      toast.error("Action non autorisée", { description: "Seul un administrateur peut créer des espaces." });
+      return;
+    }
     if (!createForm.name.trim()) return;
     setSaving(true);
     try {
@@ -124,6 +128,10 @@ export function DbWorkspacesPage() {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!authUser?.isAdmin) {
+      toast.error("Action non autorisée", { description: "Seul un administrateur peut modifier des espaces." });
+      return;
+    }
     if (!editingWs) return;
     setSaving(true);
     try {
@@ -154,6 +162,10 @@ export function DbWorkspacesPage() {
   };
 
   const handleDelete = async (ws: Workspace) => {
+    if (!authUser?.isAdmin) {
+      toast.error("Action non autorisée", { description: "Seul un administrateur peut supprimer des espaces." });
+      return;
+    }
     setDeleting(ws.id);
     try {
       const { error } = await supabaseDbAdmin.from("workspaces").delete().eq("id", ws.id);
@@ -367,13 +379,15 @@ export function DbWorkspacesPage() {
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             Actualiser
           </button>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black text-primary-foreground bg-primary shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            Nouvel espace
-          </button>
+          {authUser?.isAdmin && (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black text-primary-foreground bg-primary shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              Nouvel espace
+            </button>
+          )}
         </div>
       </div>
 
@@ -402,9 +416,11 @@ export function DbWorkspacesPage() {
         <div className="py-20 text-center">
           <Layers className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
           <p className="text-sm text-muted-foreground font-semibold">Aucun espace de travail</p>
-          <button onClick={() => setShowCreate(true)} className="mt-4 px-4 py-2 rounded-xl text-sm font-bold text-primary border border-primary/20 hover:bg-primary/10 transition-all">
-            Créer le premier
-          </button>
+          {authUser?.isAdmin && (
+            <button onClick={() => setShowCreate(true)} className="mt-4 px-4 py-2 rounded-xl text-sm font-bold text-primary border border-primary/20 hover:bg-primary/10 transition-all">
+              Créer le premier
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
@@ -449,12 +465,16 @@ export function DbWorkspacesPage() {
                     >
                       Ouvrir <ArrowRight className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={() => openEdit(ws)} className="p-2 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all" title="Modifier">
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => setConfirmDel(ws)} className="p-2 rounded-xl text-destructive/50 hover:bg-destructive/10 hover:text-destructive transition-all" title="Supprimer">
-                      {deleting === ws.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                    </button>
+                    {authUser?.isAdmin && (
+                      <>
+                        <button onClick={() => openEdit(ws)} className="p-2 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all" title="Modifier">
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => setConfirmDel(ws)} className="p-2 rounded-xl text-destructive/50 hover:bg-destructive/10 hover:text-destructive transition-all" title="Supprimer">
+                          {deleting === ws.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

@@ -25,7 +25,10 @@ import {
   Play,
   Heading1,
   Heading2,
-  AlignLeft
+  AlignLeft,
+  List,
+  ListOrdered,
+  Minus
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,7 +47,8 @@ interface Subsection {
   code_language: string;
   code_content: string;
   order_index: number;
-  type?: "photo" | "video" | "title" | "subtitle" | "text" | "code";
+  type?: "photo" | "video" | "title" | "subtitle" | "text" | "code" | "list" | "step_by_step" | "hr";
+  isCollapsed?: boolean;
 }
 
 interface Section {
@@ -179,6 +183,13 @@ export function AdminDocsEditor() {
     setSections(sections.map(s => s.id === id ? { ...s, isCollapsed: !s.isCollapsed } : s));
   };
 
+  const toggleBlock = (sectionId: string, blockId: string) => {
+    setSections(sections.map(s => s.id === sectionId ? {
+      ...s,
+      subsections: s.subsections.map(b => b.id === blockId ? { ...b, isCollapsed: !b.isCollapsed } : b)
+    } : s));
+  };
+
   const setBlockType = (sectionId: string, blockId: string, type: Subsection["type"]) => {
     updateBlock(sectionId, blockId, { type });
   };
@@ -190,11 +201,22 @@ export function AdminDocsEditor() {
     // Save section title
     const { error: sError } = await supabase.from("docs_sections").update({ title }).eq("id", id);
     
-    // Save all subsections
+    // Delete blocks that are no longer in this section (moved or deleted)
+    const { data: currentBlocks } = await supabase.from("docs_subsections").select("id").eq("section_id", id);
+    const blockIdsToKeep = subsections.map(b => b.id);
+    const blocksToDelete = currentBlocks?.filter(b => !blockIdsToKeep.includes(b.id)).map(b => b.id) || [];
+    
+    if (blocksToDelete.length > 0) {
+      await supabase.from("docs_subsections").delete().in("id", blocksToDelete);
+    }
+    
+    // Upsert all current subsections with the correct section_id and order_index
     const { error: bError } = await Promise.all(
-      subsections.map(b => supabase.from("docs_subsections").update({
-        title: b.title,
-        content: b.content,
+      subsections.map((b, i) => supabase.from("docs_subsections").upsert({
+        id: b.id,
+        section_id: id,
+        title: b.title || "",
+        content: b.content || "",
         image_url: b.image_url,
         image_alt: b.image_alt,
         image_caption: b.image_caption,
@@ -202,16 +224,16 @@ export function AdminDocsEditor() {
         video_title: b.video_title,
         code_language: b.code_language,
         code_content: b.code_content,
-        order_index: b.order_index,
+        order_index: i,
         type: b.type
-      }).eq("id", b.id))
+      }))
     ).then(res => ({ error: res.find(r => r.error)?.error }));
 
     if (sError || bError) {
       toast.error("Erreur lors de l'enregistrement");
     } else {
       setSections(sections.map(s => s.id === id ? { ...s, hasChanges: false } : s));
-      toast.success("Section enregistrée !");
+      toast.success("Section synchronisée !");
     }
     setSaving(false);
   };
@@ -241,6 +263,49 @@ export function AdminDocsEditor() {
     setUploading(null);
     toast.success("Média téléversé !");
   };
+
+  const handleStepImageUpload = async (sectionId: string, blockId: string, stepIndex: number, file: File) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `docs/${fileName}`;
+
+    setUploading(`${blockId}-${stepIndex}`);
+    const { error: uploadError } = await supabase.storage
+      .from('docs_media')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      toast.error("Erreur d'upload");
+      setUploading(null);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('docs_media')
+      .getPublicUrl(filePath);
+
+    // Update the specific step via updateBlock
+    setSections(prev => {
+      const section = prev.find(s => s.id === sectionId);
+      if (!section) return prev;
+      const block = section.subsections.find(b => b.id === blockId);
+      if (!block) return prev;
+      
+      let steps: any[] = [];
+      try { steps = JSON.parse(block.content || '[]'); } catch(e) {}
+      if (!Array.isArray(steps)) steps = [];
+      
+      steps[stepIndex] = { ...steps[stepIndex], img: publicUrl };
+      
+      return prev.map(s => s.id === sectionId ? {
+        ...s,
+        hasChanges: true,
+        subsections: s.subsections.map(b => b.id === blockId ? { ...b, content: JSON.stringify(steps) } : b)
+      } : s);
+    });
+    setUploading(null);
+  };
+
 
   // --- Reordering ---
   const onDragEnd = async (result: DropResult) => {
@@ -323,7 +388,7 @@ export function AdminDocsEditor() {
       {/* Header */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 sticky top-4 z-50 bg-background/80 backdrop-blur-xl p-6 rounded-[2rem] border border-border/50 shadow-2xl">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate("/admin/docs")} className="p-3 rounded-2xl bg-muted/50 hover:bg-muted transition-all">
+          <button onClick={() => navigate("/celestial-cms/docs")} className="p-3 rounded-2xl bg-muted/50 hover:bg-muted transition-all">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
@@ -444,12 +509,16 @@ export function AdminDocsEditor() {
 
                                               {/* Contenu du bloc */}
                                               <div className="flex-1 p-8 space-y-8">
-                                                {/* Selecteur de type */}
-                                                <div className="flex flex-wrap gap-2 p-1.5 bg-muted/50 rounded-2xl w-fit border border-border/50">
+                                                {/* Selecteur de type et bouton collapse */}
+                                                <div className="flex items-center justify-between gap-4">
+                                                  <div className="flex flex-wrap gap-2 p-1.5 bg-muted/50 rounded-2xl w-fit border border-border/50">
                                                    {[
                                                       { id: 'title', icon: <Heading1 className="w-4 h-4" />, label: 'Titre' },
                                                       { id: 'subtitle', icon: <Heading2 className="w-4 h-4" />, label: 'Sous-titre' },
                                                       { id: 'text', icon: <AlignLeft className="w-4 h-4" />, label: 'Texte' },
+                                                      { id: 'list', icon: <List className="w-4 h-4" />, label: 'Liste' },
+                                                      { id: 'step_by_step', icon: <ListOrdered className="w-4 h-4" />, label: 'Étapes' },
+                                                      { id: 'hr', icon: <Minus className="w-4 h-4" />, label: 'Ligne' },
                                                       { id: 'photo', icon: <ImageIcon className="w-4 h-4" />, label: 'Photo' },
                                                       { id: 'video', icon: <Video className="w-4 h-4" />, label: 'Vidéo' },
                                                       { id: 'code', icon: <Code2 className="w-4 h-4" />, label: 'Code' },
@@ -459,12 +528,23 @@ export function AdminDocsEditor() {
                                                          onClick={() => setBlockType(section.id, block.id, t.id as any)}
                                                          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${block.type === t.id ? 'bg-background shadow-md text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                                                       >
-                                                         {t.icon} {t.label}
+                                                         {t.icon} <span className="hidden sm:inline">{t.label}</span>
                                                       </button>
                                                    ))}
                                                 </div>
+                                                <button 
+                                                    onClick={() => toggleBlock(section.id, block.id)}
+                                                    className="p-2 px-4 rounded-xl bg-muted/30 hover:bg-primary/10 hover:text-primary transition-all flex items-center gap-2 border border-border/50 shrink-0"
+                                                  >
+                                                    {block.isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60">
+                                                      {block.isCollapsed ? 'Déplier' : 'Réduire'}
+                                                    </span>
+                                                  </button>
+                                                </div>
 
-                                                <div className="space-y-6">
+                                                {!block.isCollapsed && (
+                                                  <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
                                                    {/* Champs communs ou spécifiques */}
                                                    {(block.type === 'title' || block.type === 'subtitle' || !block.type || block.type === 'text') && (
                                                       <input 
@@ -484,6 +564,137 @@ export function AdminDocsEditor() {
                                                          rows={block.type === 'subtitle' ? 2 : 4}
                                                       />
                                                    )}
+
+                                                   
+                                                   {block.type === 'list' && (
+                                                      <div className="space-y-3">
+                                                         <input
+                                                            value={block.title}
+                                                            onChange={(e) => updateBlock(section.id, block.id, { title: e.target.value })}
+                                                            className="text-base font-bold bg-transparent border-none outline-none focus:text-primary w-full"
+                                                            placeholder="Titre de la liste (optionnel)..."
+                                                         />
+                                                         <div className="rounded-xl bg-muted/30 border border-border/40 p-4">
+                                                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 mb-2">Une entree par ligne (ex: - Element)</p>
+                                                            <textarea
+                                                               value={block.content}
+                                                               onChange={(e) => updateBlock(section.id, block.id, { content: e.target.value })}
+                                                               className="w-full bg-transparent border-none outline-none text-muted-foreground leading-relaxed resize-none font-mono text-sm"
+                                                               placeholder="- Premier element"
+                                                               rows={6}
+                                                            />
+                                                         </div>
+                                                         {block.content && (
+                                                            <div className="rounded-xl bg-card border border-border/30 p-4">
+                                                               <p className="text-[9px] font-black uppercase tracking-widest text-primary/60 mb-3">Apercu</p>
+                                                               <ul className="space-y-1.5">
+                                                                  {block.content.split('\n').filter((l: string) => l.trim()).map((line: string, i: number) => (
+                                                                     <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                                                        <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
+                                                                        {line.replace(/^[-*\u2022]\s*/, '')}
+                                                                     </li>
+                                                                  ))}
+                                                               </ul>
+                                                            </div>
+                                                         )}
+                                                      </div>
+                                                   )}
+
+
+                                                   {block.type === 'step_by_step' && (() => {
+                                                      let steps: any[] = [];
+                                                      try { steps = JSON.parse(block.content || '[]'); } catch(e) {}
+                                                      if (!Array.isArray(steps)) steps = [];
+                                                      
+                                                      const updateStep = (idx: number, updates: any) => {
+                                                         const newSteps = [...steps];
+                                                         newSteps[idx] = { ...newSteps[idx], ...updates };
+                                                         updateBlock(section.id, block.id, { content: JSON.stringify(newSteps) });
+                                                      };
+                                                      
+                                                      const addStep = () => {
+                                                         const newSteps = [...steps, { title: '', desc: '', img: '' }];
+                                                         updateBlock(section.id, block.id, { content: JSON.stringify(newSteps) });
+                                                      };
+                                                      
+                                                      const removeStep = (idx: number) => {
+                                                         const newSteps = steps.filter((_, i) => i !== idx);
+                                                         updateBlock(section.id, block.id, { content: JSON.stringify(newSteps) });
+                                                      };
+                                                      
+                                                      return (
+                                                         <div className="space-y-4">
+                                                            <div className="flex items-center justify-between">
+                                                               <input 
+                                                                  value={block.title} 
+                                                                  onChange={(e) => updateBlock(section.id, block.id, { title: e.target.value })}
+                                                                  className="text-lg font-bold bg-transparent border-none outline-none focus:text-primary"
+                                                                  placeholder="Titre global des étapes (optionnel)..."
+                                                               />
+                                                               <Button size="sm" variant="outline" onClick={addStep} className="gap-2">
+                                                                  <Plus className="w-4 h-4" /> Ajouter une étape
+                                                               </Button>
+                                                            </div>
+                                                            
+                                                            <div className="space-y-4">
+                                                               {steps.map((step, idx) => (
+                                                                  <div key={idx} className="p-4 rounded-xl border border-border/50 bg-muted/20 relative group/step">
+                                                                     <div className="absolute top-2 right-2 opacity-0 group-hover/step:opacity-100 transition-opacity">
+                                                                        <button onClick={() => removeStep(idx)} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg">
+                                                                           <Trash2 className="w-4 h-4" />
+                                                                        </button>
+                                                                     </div>
+                                                                     
+                                                                     <div className="flex gap-4 items-start">
+                                                                        <div className="w-8 h-8 shrink-0 rounded-full bg-primary/20 text-primary font-black flex items-center justify-center">
+                                                                           {idx + 1}
+                                                                        </div>
+                                                                        
+                                                                        <div className="flex-1 space-y-3">
+                                                                           <input 
+                                                                              value={step.title || ''} 
+                                                                              onChange={(e) => updateStep(idx, { title: e.target.value })}
+                                                                              className="text-base font-bold bg-transparent border-none outline-none focus:text-primary w-full"
+                                                                              placeholder={`Titre de l'étape ${idx + 1}...`}
+                                                                           />
+                                                                           <textarea 
+                                                                              value={step.desc || ''} 
+                                                                              onChange={(e) => updateStep(idx, { desc: e.target.value })}
+                                                                              className="w-full text-sm bg-transparent border-none outline-none focus:text-foreground text-muted-foreground leading-relaxed resize-none"
+                                                                              placeholder="Description de l'étape..."
+                                                                              rows={2}
+                                                                           />
+                                                                        </div>
+                                                                        
+                                                                        <div className="w-32 h-24 shrink-0 rounded-lg bg-muted border border-dashed border-border flex flex-col items-center justify-center gap-2 group/drop relative overflow-hidden">
+                                                                           {step.img ? (
+                                                                              <>
+                                                                                 <img src={step.img} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
+                                                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/drop:opacity-100 transition-opacity flex items-center justify-center">
+                                                                                    <Upload className="w-5 h-5 text-white" />
+                                                                                 </div>
+                                                                              </>
+                                                                           ) : (
+                                                                              <>
+                                                                                 <ImageIcon className="w-5 h-5 text-muted-foreground/30" />
+                                                                                 <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground/50">Photo</span>
+                                                                              </>
+                                                                           )}
+                                                                           <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => e.target.files?.[0] && handleStepImageUpload(section.id, block.id, idx, e.target.files[0])} />
+                                                                           {uploading === `${block.id}-${idx}` && <div className="absolute inset-0 bg-background/80 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin" /></div>}
+                                                                        </div>
+                                                                     </div>
+                                                                  </div>
+                                                               ))}
+                                                               {steps.length === 0 && (
+                                                                  <div className="text-center p-8 border-2 border-dashed border-border rounded-xl text-muted-foreground">
+                                                                     Aucune étape pour le moment.
+                                                                  </div>
+                                                               )}
+                                                            </div>
+                                                         </div>
+                                                      );
+                                                   })()}
 
                                                    {block.type === 'photo' && (
                                                       <div className="grid md:grid-cols-[200px_1fr] gap-8">
@@ -544,7 +755,16 @@ export function AdminDocsEditor() {
                                                          />
                                                       </div>
                                                    )}
-                                                </div>
+
+                                                   {block.type === 'hr' && (
+                                                      <div className="py-8 flex items-center justify-center">
+                                                        <div className="w-full h-[2px] bg-[#000000] relative">
+                                                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">Séparateur</div>
+                                                        </div>
+                                                      </div>
+                                                   )}
+                                                  </div>
+                                                )}
                                               </div>
                                             </div>
                                           </Card>
@@ -587,3 +807,5 @@ export function AdminDocsEditor() {
     </div>
   );
 }
+
+

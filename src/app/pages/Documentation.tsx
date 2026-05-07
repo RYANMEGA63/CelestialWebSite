@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   BookOpen, ChevronRight, Clock, Search, FileText,
-  Zap, Code2, Blocks, Database, Lock, Menu, X, ArrowLeft,
-  Hash
+  Zap, Code2, Blocks, Database, Lock, Menu, X
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { DocPage } from "./DocPage";
@@ -33,10 +32,11 @@ export function Documentation() {
   const [categories, setCategories] = useState<any[]>([]);
   const [docs, setDocs] = useState<DocPageData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<DocPageData | null>(null);
   const [search, setSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Track which categories are expanded (all open by default)
+  const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function fetchData() {
@@ -55,239 +55,216 @@ export function Documentation() {
           time: p.time_to_read ?? "",
         }))
       );
-      if (cats.length > 0) setActiveCategory(cats[0].id);
+      // Expand all categories by default
+      setExpandedCats(new Set(cats.map((c: any) => c.id)));
       setLoading(false);
     }
     fetchData();
   }, []);
 
-  const visibleDocs = docs.filter((d) => {
-    const matchCat = activeCategory ? d.category === activeCategory : true;
-    const matchSearch =
-      !search ||
-      d.title.toLowerCase().includes(search.toLowerCase()) ||
-      d.description.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
-  });
-
-  const getPrevNext = (doc: DocPageData) => {
-    const idx = visibleDocs.findIndex((d) => d.id === doc.id);
-    return {
-      prev: idx > 0 ? visibleDocs[idx - 1] : undefined,
-      next: idx < visibleDocs.length - 1 ? visibleDocs[idx + 1] : undefined,
-    };
+  const toggleCat = (id: string) => {
+    setExpandedCats(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
-  const activeCat = categories.find((c) => c.id === activeCategory);
+  const filteredDocs = (catId: string) =>
+    docs.filter(d => {
+      const matchCat = d.category === catId;
+      const matchSearch =
+        !search ||
+        d.title.toLowerCase().includes(search.toLowerCase()) ||
+        d.description.toLowerCase().includes(search.toLowerCase());
+      return matchCat && matchSearch;
+    });
 
-  const handleSelectCategory = (id: string) => {
-    setActiveCategory(id);
-    setSelectedDoc(null);
-    setSidebarOpen(false);
-  };
+  const allDocsForSearch = docs.filter(d =>
+    search &&
+    (d.title.toLowerCase().includes(search.toLowerCase()) ||
+     d.description.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const activeCat = categories.find(c => c.id === selectedDoc?.category);
+
+  const allVisibleDocs = selectedDoc
+    ? docs.filter(d => d.category === selectedDoc.category)
+    : [];
+  const selectedIdx = allVisibleDocs.findIndex(d => d.id === selectedDoc?.id);
+  const prevDoc = selectedIdx > 0 ? allVisibleDocs[selectedIdx - 1] : undefined;
+  const nextDoc = selectedIdx < allVisibleDocs.length - 1 ? allVisibleDocs[selectedIdx + 1] : undefined;
 
   // ─── SIDEBAR ────────────────────────────────────────────────
   const SidebarContent = () => (
     <div className="flex flex-col h-full py-6 px-0 bg-background">
       {/* Header */}
-      <div className="px-6 mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-8 h-8 flex items-center justify-center bg-foreground text-background">
-            <BookOpen className="w-4 h-4" />
+      <div className="px-5 mb-6">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-7 h-7 flex items-center justify-center bg-foreground text-background shrink-0">
+            <BookOpen className="w-3.5 h-3.5" />
           </div>
-          <span className="text-base font-black tracking-tighter uppercase text-foreground">
+          <span className="text-sm font-black tracking-tighter uppercase text-foreground">
             Documentation
           </span>
         </div>
-        <p className="text-xs font-mono text-muted-foreground ml-11">
-          {categories.length} THEMES / {docs.length} GUIDES
+        <p className="text-[10px] font-mono text-muted-foreground ml-10">
+          {categories.length} THÈMES · {docs.length} GUIDES
         </p>
       </div>
 
       {/* Search */}
-      <div className="px-6 mb-6">
+      <div className="px-5 mb-5">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <input
             type="text"
             placeholder="Rechercher..."
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setSelectedDoc(null); }}
-            className="w-full pl-10 pr-4 py-2.5 text-xs font-mono outline-none border-2 border-border bg-background text-foreground focus:border-foreground transition-none"
+            onChange={(e) => { setSearch(e.target.value); }}
+            className="w-full pl-9 pr-3 py-2 text-xs font-mono outline-none border border-border bg-background text-foreground focus:border-foreground transition-none"
           />
         </div>
       </div>
 
-      {/* Nav */}
-      <p className="text-[10px] font-mono font-bold uppercase tracking-widest px-6 mb-3 text-muted-foreground">
-        Thèmes
-      </p>
-      <nav className="flex-1 overflow-y-auto space-y-0 no-scrollbar">
+      {/* Accordion Nav */}
+      <nav className="flex-1 overflow-y-auto no-scrollbar">
         {loading
-          ? Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-10 animate-pulse border-b border-border/50 mx-6 bg-muted/50" />
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-9 animate-pulse border-b border-border/40 mx-5 mb-1 bg-muted/40" />
             ))
+          : search
+          ? (
+            // Search results across all categories
+            <div className="px-5">
+              <p className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
+                Résultats ({allDocsForSearch.length})
+              </p>
+              {allDocsForSearch.length === 0
+                ? <p className="text-xs text-muted-foreground py-4 text-center">Aucun résultat</p>
+                : allDocsForSearch.map(doc => (
+                    <button
+                      key={doc.id}
+                      onClick={() => { setSelectedDoc(doc); setSidebarOpen(false); }}
+                      className={`w-full text-left px-3 py-2 text-xs font-medium truncate border-l-2 mb-0.5 transition-none ${
+                        selectedDoc?.id === doc.id
+                          ? "border-foreground text-foreground bg-muted/30"
+                          : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/20"
+                      }`}
+                    >
+                      {doc.title}
+                    </button>
+                  ))
+              }
+            </div>
+          )
           : categories.map((cat) => {
               const Icon = getCategoryIcon(cat.id);
-              const isActive = cat.id === activeCategory;
-              const count = docs.filter((d) => d.category === cat.id).length;
+              const isExpanded = expandedCats.has(cat.id);
+              const catDocs = filteredDocs(cat.id);
+
               return (
-                <button
-                  key={cat.id}
-                  onClick={() => handleSelectCategory(cat.id)}
-                  className={`w-full flex items-center gap-3 px-6 py-3 text-left transition-none border-l-4 ${
-                    isActive ? "border-primary bg-muted/30 text-foreground" : "border-transparent text-muted-foreground hover:bg-muted/10 hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span className="text-sm font-semibold flex-1 truncate">
-                    {cat.label}
-                  </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 bg-muted text-foreground shrink-0">
-                    {count}
-                  </span>
-                </button>
+                <div key={cat.id}>
+                  {/* Category header (toggle) */}
+                  <button
+                    onClick={() => toggleCat(cat.id)}
+                    className="w-full flex items-center gap-2.5 px-5 py-2.5 text-left hover:bg-muted/20 transition-none group"
+                  >
+                    <Icon className="w-3.5 h-3.5 shrink-0 text-muted-foreground group-hover:text-foreground" />
+                    <span className="text-xs font-black uppercase tracking-widest flex-1 truncate text-foreground">
+                      {cat.label}
+                    </span>
+                    <span className="text-[9px] font-mono text-muted-foreground/60 mr-1">{catDocs.length}</span>
+                    <motion.div
+                      animate={{ rotate: isExpanded ? 90 : 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
+                    </motion.div>
+                  </button>
+
+                  {/* Sub-items */}
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.18 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="ml-5 border-l border-border/40 pl-0 mb-1">
+                          {catDocs.length === 0 ? (
+                            <p className="text-[10px] text-muted-foreground/40 pl-4 py-2 font-mono">Aucun guide</p>
+                          ) : catDocs.map(doc => (
+                            <button
+                              key={doc.id}
+                              onClick={() => { setSelectedDoc(doc); setSidebarOpen(false); }}
+                              className={`w-full text-left pl-4 pr-3 py-2 text-xs font-medium truncate border-l-2 -ml-px transition-none flex items-center gap-2 ${
+                                selectedDoc?.id === doc.id
+                                  ? "border-primary text-foreground bg-primary/5 font-bold"
+                                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border hover:bg-muted/10"
+                              }`}
+                            >
+                              <FileText className="w-3 h-3 shrink-0 opacity-50" />
+                              <span className="truncate">{doc.title}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               );
-            })}
+            })
+        }
       </nav>
     </div>
   );
 
-  // ─── LISTE DES PAGES ────────────────────────────────────────
-  const PagesList = () => (
-    <div className="flex-1 overflow-y-auto p-8 lg:p-12">
-      <motion.div key={activeCategory} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="mb-10">
-        {activeCat && (
-          <>
-            <nav className="flex items-center gap-2 mb-6 text-xs font-mono uppercase text-muted-foreground">
-              <span>Docs</span>
-              <span className="text-border">/</span>
-              <span className="text-foreground">{activeCat.label}</span>
-            </nav>
-
-            <div className="flex items-center gap-4 mb-4">
-              {(() => {
-                const Icon = getCategoryIcon(activeCat.id);
-                return (
-                  <div className="w-12 h-12 flex items-center justify-center shrink-0 border-2 border-primary text-primary">
-                    <Icon className="w-6 h-6" />
-                  </div>
-                );
-              })()}
+  // ─── WELCOME (rien de sélectionné) ──────────────────────────
+  const WelcomeView = () => (
+    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
+      <div className="w-16 h-16 flex items-center justify-center bg-foreground text-background mb-6">
+        <BookOpen className="w-8 h-8" />
+      </div>
+      <h2 className="text-2xl font-black tracking-tight mb-3">Documentation Celestial</h2>
+      <p className="text-sm text-muted-foreground max-w-sm mb-8">
+        Sélectionnez un guide dans la barre de navigation à gauche pour commencer.
+      </p>
+      <div className="grid grid-cols-2 gap-3 w-full max-w-sm">
+        {categories.slice(0, 4).map(cat => {
+          const Icon = getCategoryIcon(cat.id);
+          const count = docs.filter(d => d.category === cat.id).length;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => {
+                setExpandedCats(prev => new Set([...prev, cat.id]));
+                const firstDoc = docs.find(d => d.category === cat.id);
+                if (firstDoc) setSelectedDoc(firstDoc);
+              }}
+              className="flex items-center gap-3 p-4 border border-border hover:border-foreground bg-background hover:bg-muted/20 text-left transition-none group"
+            >
+              <Icon className="w-4 h-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
               <div>
-                <h1 className="text-3xl font-black tracking-tighter uppercase text-foreground">
-                  {activeCat.label}
-                </h1>
-                <p className="text-sm font-mono text-muted-foreground mt-1">
-                  {visibleDocs.length} GUIDE{visibleDocs.length !== 1 ? "S" : ""}
-                  {search ? ` FOR "${search.toUpperCase()}"` : ""}
-                </p>
+                <p className="text-xs font-black text-foreground">{cat.label}</p>
+                <p className="text-[10px] font-mono text-muted-foreground">{count} guide{count !== 1 ? "s" : ""}</p>
               </div>
-            </div>
-            <div className="h-0.5 w-full bg-border mt-8" />
-          </>
-        )}
-      </motion.div>
-
-      {visibleDocs.length === 0 ? (
-        <div className="text-center py-20" style={{ color: "var(--muted-foreground)" }}>
-          <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p className="font-semibold text-sm">Aucun guide correspondant</p>
-        </div>
-      ) : (
-        <div className="flex flex-col border-t border-border">
-          <AnimatePresence mode="popLayout">
-            {visibleDocs.map((doc, i) => (
-              <motion.button
-                key={doc.id}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ delay: i * 0.035, duration: 0.18 }}
-                onClick={() => setSelectedDoc(doc)}
-                className="group text-left p-6 border-b border-border bg-background hover:bg-muted/30 transition-none flex flex-col sm:flex-row sm:items-center gap-4"
-              >
-                <div className="flex-1">
-                   <div className="flex items-center gap-3 mb-2">
-                     <FileText className="w-4 h-4 text-primary" />
-                     <h3 className="text-lg font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
-                       {doc.title}
-                     </h3>
-                   </div>
-                   <p className="text-sm text-muted-foreground line-clamp-2 sm:line-clamp-1 ml-7">
-                     {doc.description}
-                   </p>
-                </div>
-                <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground shrink-0 sm:ml-auto ml-7">
-                   <Clock className="w-3.5 h-3.5" />
-                   {doc.time}
-                </div>
-              </motion.button>
-            ))}
-          </AnimatePresence>
-        </div>
-      )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 
-  // ─── CONTENU D'UNE PAGE ─────────────────────────────────────
-  const DocContent = () => {
-    if (!selectedDoc) return null;
-    const { prev, next } = getPrevNext(selectedDoc);
-    
-    // Guides du même thème pour la sub-nav
-    const siblingDocs = docs.filter(d => d.category === selectedDoc.category);
-
-    return (
-      <div className="flex-1 h-full flex flex-col overflow-hidden">
-        {/* NPM-style Header Navbar */}
-        <div className="shrink-0 border-b-2 border-border bg-background z-40">
-           <div className="px-8 py-5 flex items-center gap-3 text-xs font-mono uppercase text-muted-foreground">
-              <button onClick={() => setSelectedDoc(null)} className="hover:text-foreground transition-colors font-bold">Docs</button>
-              <span className="text-border">/</span>
-              <button onClick={() => setSelectedDoc(null)} className="hover:text-foreground transition-colors font-bold">{activeCat?.label}</button>
-              <span className="text-border">/</span>
-              <span className="text-foreground font-black bg-muted px-2 py-0.5">{selectedDoc.title}</span>
-           </div>
-           
-           <div className="px-8 pb-0 flex gap-6 overflow-x-auto no-scrollbar border-t border-border">
-              {siblingDocs.map(d => (
-                <button
-                  key={d.id}
-                  onClick={() => setSelectedDoc(d)}
-                  className={`py-4 text-xs font-bold uppercase tracking-widest border-b-[3px] transition-none shrink-0 ${
-                    d.id === selectedDoc.id 
-                      ? "border-foreground text-foreground" 
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-                  }`}
-                >
-                  {d.title}
-                </button>
-              ))}
-           </div>
-        </div>
-
-        {/* DocPage en mode embedded */}
-        <div className="flex-1 overflow-y-auto">
-          <DocPage
-            doc={selectedDoc}
-            categoryLabel={activeCat?.label ?? ""}
-            onBack={() => setSelectedDoc(null)}
-            prevDoc={prev ? { title: prev.title, onNavigate: () => setSelectedDoc(prev) } : undefined}
-            nextDoc={next ? { title: next.title, onNavigate: () => setSelectedDoc(next) } : undefined}
-            embedded
-          />
-        </div>
-      </div>
-    );
-  };
-
   // ─── LAYOUT ─────────────────────────────────────────────────
   return (
-    <div className="flex" style={{ height: "calc(100vh - 73px)", background: "var(--background)" }}>
+    <div className="flex min-h-[calc(100vh-5rem)]" style={{ background: "var(--background)" }}>
 
       {/* Sidebar desktop */}
-      <aside className="hidden lg:flex flex-col w-64 shrink-0 border-r overflow-hidden" style={{ borderColor: "var(--border)" }}>
+      <aside className="hidden lg:flex flex-col w-64 shrink-0 sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar">
         <SidebarContent />
       </aside>
 
@@ -312,7 +289,7 @@ export function Documentation() {
       </AnimatePresence>
 
       {/* Panel droit */}
-      <div className="flex-1 overflow-hidden flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0 lg:border-l" style={{ borderColor: "var(--border)" }}>
 
         {/* Topbar mobile */}
         <div className="lg:hidden flex items-center gap-3 px-4 py-3 border-b shrink-0" style={{ borderColor: "var(--border)" }}>
@@ -320,38 +297,71 @@ export function Documentation() {
             <Menu className="w-4 h-4" />
           </button>
           <span className="text-sm font-semibold truncate" style={{ color: "var(--foreground)" }}>
-            {selectedDoc ? selectedDoc.title : activeCat?.label ?? "Documentation"}
+            {selectedDoc ? selectedDoc.title : "Documentation"}
           </span>
         </div>
 
-        {/* Contenu animé */}
-        <div className="flex-1 overflow-hidden">
-          <AnimatePresence mode="wait">
-            {selectedDoc ? (
-              <motion.div
-                key={`doc-${selectedDoc.id}`}
-                initial={{ opacity: 0, x: 16 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -16 }}
-                transition={{ duration: 0.18 }}
-                className="h-full flex flex-col overflow-hidden"
-              >
-                <DocContent />
-              </motion.div>
-            ) : (
-              <motion.div
-                key={`list-${activeCategory ?? "all"}-${search}`}
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 16 }}
-                transition={{ duration: 0.18 }}
-                className="h-full overflow-y-auto"
-              >
-                <PagesList />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        {/* Contenu */}
+        <AnimatePresence mode="wait">
+          {selectedDoc ? (
+            <motion.div
+              key={`doc-${selectedDoc.id}`}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.18 }}
+              className="flex flex-col flex-1"
+            >
+              {/* Breadcrumb + sibling sub-nav */}
+              <div className="shrink-0 border-b-2 border-border bg-background z-30 sticky top-20">
+                <div className="px-8 py-3 flex items-center gap-2 text-xs font-mono uppercase text-muted-foreground">
+                  <button onClick={() => setSelectedDoc(null)} className="hover:text-foreground transition-colors font-bold">Docs</button>
+                  <span className="text-border">/</span>
+                  <span className="text-foreground font-black">{activeCat?.label}</span>
+                  <span className="text-border">/</span>
+                  <span className="text-muted-foreground truncate max-w-xs">{selectedDoc.title}</span>
+                </div>
+                <div className="px-8 pb-0 flex gap-6 overflow-x-auto no-scrollbar border-t border-border">
+                  {allVisibleDocs.map(d => (
+                    <button
+                      key={d.id}
+                      onClick={() => setSelectedDoc(d)}
+                      className={`py-3 text-xs font-bold uppercase tracking-widest border-b-[3px] transition-none shrink-0 ${
+                        d.id === selectedDoc.id
+                          ? "border-foreground text-foreground"
+                          : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                      }`}
+                    >
+                      {d.title}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex-1">
+                <DocPage
+                  doc={selectedDoc}
+                  categoryLabel={activeCat?.label ?? ""}
+                  onBack={() => setSelectedDoc(null)}
+                  prevDoc={prevDoc ? { title: prevDoc.title, onNavigate: () => setSelectedDoc(prevDoc) } : undefined}
+                  nextDoc={nextDoc ? { title: nextDoc.title, onNavigate: () => setSelectedDoc(nextDoc) } : undefined}
+                  embedded
+                />
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="welcome"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="flex-1 flex"
+            >
+              <WelcomeView />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

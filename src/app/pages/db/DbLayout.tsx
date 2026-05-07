@@ -27,29 +27,32 @@ interface UserWorkspace {
   id: string; name: string; emoji: string; color: string; description: string | null; role: string;
 }
 
-// ─────────────────────────────────────────────────────────────
+// ── Inactivity Banner — compact warning strip ─────────────────
 function InactivityBanner({ countdown, resetTimer }: { countdown: number; resetTimer: () => void }) {
   return (
-    <div className="sticky top-0 z-50 flex items-center justify-between gap-3 px-4 py-3 bg-amber-500/10 border-b border-amber-500/20">
-      <div className="flex items-center gap-2 min-w-0">
-        <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
-        <p className="text-sm font-semibold text-amber-600 dark:text-amber-400 truncate">
+    <div className="flex items-center justify-between gap-2 px-3 py-1 bg-amber-100 border-b border-amber-400 text-amber-900 text-[11px]">
+      <div className="flex items-center gap-1.5">
+        <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+        <span className="font-semibold">
           Déconnexion dans <span className="font-black tabular-nums">{formatCountdown(countdown)}</span>
-        </p>
+        </span>
       </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <button onClick={resetTimer} className="px-3 py-1 rounded-lg bg-amber-500 text-white text-xs font-black uppercase hover:bg-amber-600 transition-colors">
-          Rester
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          onClick={resetTimer}
+          className="px-2 py-0.5 bg-amber-500 text-white text-[11px] font-bold border border-amber-700 hover:bg-amber-600"
+        >
+          Rester connecté
         </button>
-        <button onClick={resetTimer} className="p-1 rounded-lg text-amber-600/60 dark:text-amber-400/40 hover:text-amber-600 dark:hover:text-amber-400">
-          <X className="w-4 h-4" />
+        <button onClick={resetTimer} className="p-0.5 text-amber-700 hover:text-amber-900">
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────
+// ── Main Layout Inner ─────────────────────────────────────────
 function DbLayoutInner() {
   const { user, loading, showWarning, countdown, logout, resetTimer } = useDbAuth();
   const location = useLocation();
@@ -63,7 +66,7 @@ function DbLayoutInner() {
 
   // THEME MANAGEMENT
   const [isDark, setIsDark] = useState(() => {
-    return document.documentElement.classList.contains("dark") || 
+    return document.documentElement.classList.contains("dark") ||
       (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches) ||
       localStorage.getItem("theme") === "dark";
   });
@@ -97,12 +100,13 @@ function DbLayoutInner() {
       });
   }, [user, loading, navigate, isWorkspaceView]);
 
+  // ── Loading state ─────────────────────────────────────────────
   if (loading || wsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background transition-colors duration-300">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-muted-foreground font-semibold">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-8 h-8 border-2 border-golden border-t-transparent animate-spin" />
+          <p className="text-[12px] text-muted-foreground font-semibold">
             {loading ? "Vérification de la session…" : "Résolution de votre espace…"}
           </p>
         </div>
@@ -113,36 +117,34 @@ function DbLayoutInner() {
   // ── No workspace error ────────────────────────────────────────
   if (!user?.isAdmin && userWorkspaces !== null && userWorkspaces.length === 0 && !isWorkspaceView) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 relative overflow-hidden transition-colors duration-300">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-72 h-72 bg-destructive/10 rounded-full blur-3xl" />
-        </div>
-        <div className="relative z-10 max-w-md w-full text-center space-y-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-destructive/10 border border-destructive/20 mx-auto">
-            <Ban className="w-8 h-8 text-destructive" />
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
+        <div className="max-w-sm w-full border border-border bg-card">
+          {/* Dialog title bar */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#000080] text-white text-[12px] font-bold">
+            <Ban className="w-3.5 h-3.5" />
+            Accès refusé — Aucun espace assigné
           </div>
-          <div className="space-y-2">
-            <h1 className="text-xl font-black text-foreground">Aucun espace assigné</h1>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Votre compte <span className="text-foreground font-semibold">{user?.email}</span> n'est assigné à aucun espace de travail.<br />
+          <div className="p-4 space-y-3">
+            <p className="text-[12px] text-foreground">
+              Votre compte <span className="font-semibold">{user?.email}</span> n'est assigné à aucun espace de travail.
+            </p>
+            <p className="text-[11px] text-muted-foreground">
               Contactez votre administrateur pour obtenir un accès.
             </p>
-          </div>
-          <div className="p-4 rounded-2xl border border-border bg-card flex items-center gap-3 text-left">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/30 to-secondary/30 border border-border flex items-center justify-center shrink-0">
-              <span className="text-xs font-black text-foreground">{user?.email?.slice(0, 2).toUpperCase()}</span>
+            {/* Status bar */}
+            <div className="border border-border bg-toolbar px-2 py-1 flex items-center gap-2">
+              <span className="w-2 h-2 bg-emerald-500 inline-block" />
+              <span className="text-[11px] text-muted-foreground truncate">{user?.email}</span>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">{user?.email}</p>
-              <div className="flex items-center gap-1 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Session active</span>
-              </div>
+            <div className="flex justify-end pt-1">
+              <button
+                onClick={logout}
+                className="flex items-center gap-1.5 px-4 py-1 bg-muted text-foreground text-[12px] font-medium border border-border hover:bg-[#D0CCC4] bevel-raised"
+              >
+                <LogOut className="w-3.5 h-3.5" /> Se déconnecter
+              </button>
             </div>
           </div>
-          <button onClick={logout} className="w-full py-3 rounded-xl text-sm font-black text-muted-foreground border border-border hover:bg-muted hover:text-foreground transition-all flex items-center justify-center gap-2">
-            <LogOut className="w-4 h-4" /> Se déconnecter
-          </button>
         </div>
       </div>
     );
@@ -151,58 +153,59 @@ function DbLayoutInner() {
   // ── Multiple workspaces picker ────────────────────────────────
   if (!user?.isAdmin && userWorkspaces !== null && userWorkspaces.length > 1 && !isWorkspaceView) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 relative overflow-hidden transition-colors duration-300">
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-secondary/10 rounded-full blur-3xl" />
-        </div>
-        <div className="relative z-10 max-w-lg w-full space-y-6">
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary mb-2 shadow-lg shadow-primary/20">
-              <Layers className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <h1 className="text-xl font-black text-foreground">Choisir un espace</h1>
-            <p className="text-sm text-muted-foreground">Vous avez accès à plusieurs espaces de travail</p>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
+        <div className="max-w-md w-full border border-border bg-card">
+          {/* Dialog title bar */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#000080] text-white text-[12px] font-bold">
+            <Layers className="w-3.5 h-3.5" />
+            Sélection de l'espace de travail
           </div>
-          <div className="space-y-3">
-            {userWorkspaces.map((ws) => (
-              <button key={ws.id} onClick={() => navigate(`/celestial-db/workspace/${ws.id}`)}
-                className="w-full flex items-center gap-4 p-4 rounded-2xl border border-border bg-card hover:bg-muted transition-all text-left group"
-              >
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform"
-                  style={{ backgroundColor: `${ws.color}25`, border: `1px solid ${ws.color}40` }}>
-                  {ws.emoji}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-black text-foreground truncate">{ws.name}</p>
-                  {ws.description && <p className="text-xs text-muted-foreground truncate mt-0.5">{ws.description}</p>}
-                  <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border"
-                    style={{ color: ws.color, backgroundColor: `${ws.color}15`, borderColor: `${ws.color}30` }}>
-                    <MessageSquare className="w-2.5 h-2.5" /> {ws.role}
+          <div className="p-3 space-y-2">
+            <p className="text-[11px] text-muted-foreground mb-2">Vous avez accès à plusieurs espaces de travail. Sélectionnez :</p>
+            <div className="border border-border bg-surface-sunken">
+              {userWorkspaces.map((ws, i) => (
+                <button
+                  key={ws.id}
+                  onClick={() => navigate(`/celestial-db/workspace/${ws.id}`)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-[12px] text-left border-b border-border last:border-b-0 hover:bg-[color-mix(in_srgb,_var(--golden)_12%,_var(--card))] ${i === 0 ? "bg-[color-mix(in_srgb,_var(--golden)_8%,_var(--card))]" : ""}`}
+                >
+                  <span className="text-base shrink-0">{ws.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground truncate">{ws.name}</p>
+                    {ws.description && <p className="text-[11px] text-muted-foreground truncate">{ws.description}</p>}
+                  </div>
+                  <span
+                    className="text-[10px] font-bold uppercase px-1.5 py-0.5 border shrink-0"
+                    style={{ color: ws.color, borderColor: ws.color, background: `${ws.color}18` }}
+                  >
+                    {ws.role}
                   </span>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all shrink-0" />
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center gap-2 text-xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-semibold text-muted-foreground">{user?.email}</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                </button>
+              ))}
             </div>
-            <button onClick={logout} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-destructive/70 hover:bg-destructive/10 hover:text-destructive transition-all">
-              <LogOut className="w-3.5 h-3.5" /> Déconnexion
-            </button>
+            <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <span className="w-2 h-2 bg-emerald-500 inline-block" />
+                {user?.email}
+              </div>
+              <button
+                onClick={logout}
+                className="flex items-center gap-1 px-3 py-1 text-[11px] text-destructive border border-destructive/30 hover:bg-destructive/10"
+              >
+                <LogOut className="w-3 h-3" /> Déconnexion
+              </button>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // ── Immersive Workspace View (Both roles) ─────────
+  // ── Immersive Workspace View ──────────────────────────────────
   if (isWorkspaceView) {
     return (
-      <div className="h-screen bg-background flex flex-col overflow-hidden transition-colors duration-300">
+      <div className="h-screen bg-background flex flex-col overflow-hidden">
         {!user?.isAdmin && showWarning && <InactivityBanner countdown={countdown} resetTimer={resetTimer} />}
         <div className="flex-1 overflow-hidden">
           <Outlet context={{ isDark, setIsDark }} />
@@ -211,175 +214,205 @@ function DbLayoutInner() {
     );
   }
 
-  // ── Admin layout ──────────────────────────────────────────────
+  // ── Admin Layout — Sidebar + Content ─────────────────────────
   const adminNav = [
     { name: "Utilisateurs",       path: "/celestial-db",            icon: Users },
     { name: "Espaces de travail", path: "/celestial-db/workspaces", icon: Layers },
     { name: "Base de données",    path: "/celestial-db/database",   icon: Database },
   ];
 
-  const breadcrumb = isWorkspaceView
-    ? "Espace de travail"
-    : adminNav.find((i) => i.path === location.pathname)?.name ?? "DB Manager";
+  const breadcrumb = adminNav.find((i) => i.path === location.pathname)?.name ?? "DB Manager";
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex overflow-hidden transition-colors duration-300">
-      <aside className="hidden lg:flex flex-col w-64 shrink-0 h-screen sticky top-0 overflow-hidden border-r border-border bg-card/30">
-        <div className="flex flex-col h-full">
-          <div className="p-5 border-b border-border">
-            <Link
-              to="/"
-              className="flex items-center gap-3 px-3 py-2 mb-4 w-full rounded-xl text-left border border-border bg-muted/30 hover:bg-muted text-muted-foreground hover:text-foreground transition-all text-xs font-bold"
-            >
-              <Globe className="w-3.5 h-3.5" />
-              <span>Site principal</span>
-            </Link>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/20">
-                <Database className="w-4 h-4 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-sm font-black tracking-tight">DB Manager</h1>
-                <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest">Administrateur</p>
-              </div>
-            </div>
-            <div className="p-3 rounded-xl bg-muted/50 border border-border space-y-1.5">
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Session active</span>
-                <span className="ml-auto text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">Admin</span>
-              </div>
-              <p className="text-[11px] font-semibold text-muted-foreground truncate">{user?.email ?? "Inconnu"}</p>
-              <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
-                <Clock className="w-3 h-3 shrink-0" />
-                <span className="truncate">Login : {formatLastLogin()}</span>
-              </div>
-            </div>
-            <button onClick={() => navigate("/celestial-cms")} className="mt-3 flex items-center gap-2 w-full px-2.5 py-2 rounded-xl border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-all text-xs font-semibold">
-              <Settings className="w-3.5 h-3.5" />
-              Admin Panel principal
-              <ChevronRight className="w-3 h-3 ml-auto" />
-            </button>
-            <div className="flex items-center gap-1.5 mt-3 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">
-              <ShieldCheck className="w-3 h-3" />
-              Base de données isolée
-            </div>
-          </div>
+    <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
 
-          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-            {adminNav.map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Link key={item.path} to={item.path}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm ${
-                    isActive
-                      ? "bg-gradient-to-r from-primary/20 to-secondary/10 text-foreground border border-primary/20 font-semibold"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  <item.icon className="w-4 h-4 shrink-0" />
-                  <span className="truncate">{item.name}</span>
-                  {isActive && <ChevronRight className="w-3.5 h-3.5 ml-auto text-primary" />}
-                </Link>
-              );
-            })}
-          </nav>
+      {/* ── Sidebar — Windows Explorer TreeView style ── */}
+      <aside className="hidden lg:flex flex-col w-[200px] shrink-0 h-screen sticky top-0 border-r border-border bg-toolbar overflow-hidden">
 
-          <div className="p-3 border-t border-border">
-            <button onClick={logout} className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-left text-destructive/80 hover:bg-destructive/10 hover:text-destructive transition-all text-sm font-semibold">
-              <LogOut className="w-4 h-4" />
-              Se déconnecter
-            </button>
+        {/* Sidebar header */}
+        <div className="px-2 py-1.5 border-b border-border bg-[#000080] text-white">
+          <div className="flex items-center gap-1.5">
+            <Database className="w-4 h-4 text-golden shrink-0" />
+            <span className="text-[13px] font-bold">DB Manager</span>
           </div>
+          <p className="text-[10px] text-blue-200 mt-0.5">Administrateur</p>
+        </div>
+
+        {/* Session info */}
+        <div className="px-2 py-1.5 border-b border-border bg-card text-[11px] space-y-0.5">
+          <div className="flex items-center gap-1">
+            <span className="w-2 h-2 bg-emerald-500 inline-block shrink-0" />
+            <span className="text-emerald-700 dark:text-emerald-400 font-semibold">Session active</span>
+            <span className="ml-auto px-1 py-0 text-[10px] font-bold bg-golden text-golden-foreground">Admin</span>
+          </div>
+          <p className="text-muted-foreground truncate">{user?.email ?? "Inconnu"}</p>
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <Clock className="w-3 h-3 shrink-0" />
+            <span className="truncate text-[10px]">{formatLastLogin()}</span>
+          </div>
+        </div>
+
+        {/* Quick links */}
+        <div className="px-2 py-1 border-b border-border space-y-0.5">
+          <Link
+            to="/"
+            className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground border border-transparent hover:border-border"
+          >
+            <Globe className="w-3 h-3" />
+            Site principal
+          </Link>
+          <button
+            onClick={() => navigate("/celestial-cms")}
+            className="flex items-center gap-1.5 w-full px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground border border-transparent hover:border-border text-left"
+          >
+            <Settings className="w-3 h-3" />
+            Admin Panel
+            <ChevronRight className="w-3 h-3 ml-auto" />
+          </button>
+        </div>
+
+        {/* Nav — list style */}
+        <nav className="flex-1 p-1 overflow-y-auto">
+          <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Navigation</p>
+          {adminNav.map((item) => {
+            const active = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center gap-2 px-2 py-1.5 text-[12px] mb-px border ${
+                  active
+                    ? "bg-golden text-golden-foreground border-[#A07800] font-semibold"
+                    : "border-transparent text-foreground hover:bg-muted hover:border-border"
+                }`}
+              >
+                <item.icon className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{item.name}</span>
+                {active && <ChevronRight className="w-3 h-3 ml-auto shrink-0" />}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Footer */}
+        <div className="p-1 border-t border-border">
+          <div className="flex items-center gap-1 px-2 text-[10px] text-muted-foreground mb-1">
+            <ShieldCheck className="w-3 h-3" />
+            Base de données isolée
+          </div>
+          <button
+            onClick={logout}
+            className="flex items-center gap-2 w-full px-2 py-1.5 text-[12px] text-destructive border border-transparent hover:bg-destructive/10 hover:border-destructive/30"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Se déconnecter
+          </button>
         </div>
       </aside>
 
+      {/* ── Content area ── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-border bg-card/30 shrink-0">
-          <button onClick={() => setShowMobileNav(true)} className="lg:hidden p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-all">
-            <Menu className="w-5 h-5" />
+
+        {/* Top toolbar / breadcrumb bar */}
+        <header className="flex items-center gap-2 px-3 py-1.5 border-b border-border bg-toolbar shrink-0 min-h-[28px]">
+          <button
+            onClick={() => setShowMobileNav(true)}
+            className="lg:hidden p-1 text-muted-foreground hover:bg-muted border border-transparent hover:border-border"
+          >
+            <Menu className="w-4 h-4" />
           </button>
-          <div className="flex items-center gap-2 text-muted-foreground text-xs font-semibold min-w-0 flex-1">
-            <Database className="w-3.5 h-3.5 shrink-0 hidden sm:block" />
-            <span className="hidden sm:inline">DB Manager</span>
-            <ChevronRight className="w-3 h-3 shrink-0 hidden sm:block" />
-            <span className="text-foreground truncate">{breadcrumb}</span>
+
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-1 text-[11px] text-muted-foreground min-w-0 flex-1">
+            <Database className="w-3 h-3 shrink-0" />
+            <span>DB Manager</span>
+            <ChevronRight className="w-3 h-3 shrink-0" />
+            <span className="text-foreground font-semibold truncate">{breadcrumb}</span>
           </div>
-          <div className="ml-auto flex items-center gap-3">
-            <button 
-              onClick={() => setIsDark(!isDark)}
-              className="p-1.5 rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-all border border-border"
-            >
-              {isDark ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-indigo-500" />}
-            </button>
-            <span className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary border border-primary/20">
+
+          {/* Right controls */}
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-golden text-golden-foreground border border-[#A07800]">
               <ShieldCheck className="w-3 h-3" /> Admin
             </span>
-            <button onClick={logout} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-destructive/80 hover:bg-destructive/10 hover:text-destructive transition-all lg:hidden">
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className="p-1.5 bg-muted text-muted-foreground border border-border hover:text-foreground"
+              aria-label="Toggle dark mode"
+            >
+              {isDark ? <Sun className="w-3.5 h-3.5 text-amber-500" /> : <Moon className="w-3.5 h-3.5" />}
+            </button>
+            <button
+              onClick={logout}
+              className="lg:hidden flex items-center gap-1 px-2 py-1 text-[11px] text-destructive border border-destructive/30 hover:bg-destructive/10"
+            >
               <LogOut className="w-3.5 h-3.5" /> Déco
             </button>
           </div>
         </header>
 
-        <main className={`flex-1 relative ${isWorkspaceView ? "overflow-hidden flex flex-col" : "overflow-auto"}`}>
-          {showWarning && <InactivityBanner countdown={countdown} resetTimer={resetTimer} />}
-          {isWorkspaceView ? (
-            <div className="flex-1 overflow-hidden h-full">
-              <Outlet context={{ isDark, setIsDark }} />
-            </div>
-          ) : (
-            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col">
-              <Outlet />
-            </div>
-          )}
+        {/* Inactivity warning */}
+        {showWarning && <InactivityBanner countdown={countdown} resetTimer={resetTimer} />}
+
+        {/* Main content */}
+        <main className="flex-1 overflow-auto bg-background">
+          <div className="db-content-pad max-w-full h-full flex flex-col">
+            <Outlet />
+          </div>
         </main>
       </div>
 
-      {/* Mobile Navigation Overlay */}
+      {/* ── Mobile Navigation Overlay ── */}
       {showMobileNav && (
-        <div className="fixed inset-0 z-50 flex lg:hidden bg-background/80 backdrop-blur-sm">
-          <div className="w-64 max-w-[80vw] h-full bg-card border-r border-border shadow-2xl flex flex-col">
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/20">
-                  <Database className="w-4 h-4 text-primary-foreground" />
-                </div>
-                <h2 className="font-black text-sm">DB Manager</h2>
+        <div className="fixed inset-0 z-50 flex lg:hidden">
+          {/* Sidebar panel */}
+          <div className="w-[200px] h-full bg-toolbar border-r border-border flex flex-col shadow-[4px_0_8px_rgba(0,0,0,0.3)]">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-[#000080] text-white">
+              <div className="flex items-center gap-1.5 text-[13px] font-bold">
+                <Database className="w-4 h-4 text-golden" />
+                DB Manager
               </div>
-              <button onClick={() => setShowMobileNav(false)} className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-all">
-                <X className="w-5 h-5" />
+              <button onClick={() => setShowMobileNav(false)} className="p-0.5 hover:bg-blue-800">
+                <X className="w-4 h-4" />
               </button>
             </div>
-            <nav className="flex-1 overflow-y-auto p-4 space-y-2">
-              <div className="mb-4">
-                <p className="px-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Admin Panel</p>
-                {adminNav.map((item) => {
-                  const isActive = location.pathname === item.path;
-                  return (
-                    <Link key={item.path} to={item.path} onClick={() => setShowMobileNav(false)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm mb-1 ${
-                        isActive
-                          ? "bg-gradient-to-r from-primary/20 to-secondary/10 text-foreground border border-primary/20 font-semibold"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      }`}
-                    >
-                      <item.icon className="w-4 h-4 shrink-0" />
-                      <span className="truncate">{item.name}</span>
-                    </Link>
-                  );
-                })}
-              </div>
+            <nav className="flex-1 overflow-y-auto p-1">
+              {adminNav.map((item) => {
+                const active = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setShowMobileNav(false)}
+                    className={`flex items-center gap-2 px-2 py-2 text-[12px] mb-px border ${
+                      active
+                        ? "bg-golden text-golden-foreground border-[#A07800] font-semibold"
+                        : "border-transparent text-foreground hover:bg-muted hover:border-border"
+                    }`}
+                  >
+                    <item.icon className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{item.name}</span>
+                  </Link>
+                );
+              })}
             </nav>
-            <div className="p-4 border-t border-border">
-               <Link to="/" className="flex items-center justify-center gap-2 w-full py-2 mb-3 rounded-xl bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-xs font-semibold border border-transparent hover:border-border">
-                 <Globe className="w-3.5 h-3.5" /> Site principal
-               </Link>
-               <button onClick={logout} className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-destructive hover:bg-destructive/10 transition-all text-sm font-semibold border border-destructive/20 bg-destructive/5">
-                 <LogOut className="w-4 h-4" /> Déconnexion
-               </button>
+            <div className="p-2 border-t border-border space-y-1">
+              <Link
+                to="/"
+                className="flex items-center justify-center gap-1.5 w-full py-1.5 text-[12px] font-medium text-muted-foreground border border-border hover:bg-muted"
+              >
+                <Globe className="w-3.5 h-3.5" /> Site principal
+              </Link>
+              <button
+                onClick={logout}
+                className="flex items-center justify-center gap-1.5 w-full py-1.5 text-[12px] text-destructive border border-destructive/30 hover:bg-destructive/10"
+              >
+                <LogOut className="w-4 h-4" /> Déconnexion
+              </button>
             </div>
           </div>
-          <div className="flex-1" onClick={() => setShowMobileNav(false)} />
+          {/* Backdrop */}
+          <div className="flex-1 bg-black/30" onClick={() => setShowMobileNav(false)} />
         </div>
       )}
     </div>

@@ -313,7 +313,7 @@ export function AdminDocs() {
                          </div>
                          <div className="flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                             <button 
-                              onClick={() => navigate(`/admin/docs/${guide.id}`)} 
+                              onClick={() => navigate(`/celestial-cms/docs/${guide.id}`)} 
                               className="p-3 rounded-xl bg-secondary/10 text-secondary hover:bg-secondary/20" 
                               title="Contenu"
                             >

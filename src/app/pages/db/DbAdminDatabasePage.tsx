@@ -62,7 +62,7 @@ export function DbAdminDatabasePage() {
             </p>
           </div>
         ) : (
-          <DbTableViewer allowedTables={dbTables} />
+          <DbTableViewer allowedTables={dbTables} showIdColumn={true} />
         )}
       </div>
     </div>

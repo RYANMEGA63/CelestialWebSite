@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { Link } from "react-router";
-import { motion } from "framer-motion";
 
 interface ButtonProps {
   children: ReactNode;
@@ -27,58 +26,52 @@ export function Button({
   target,
   rel,
 }: ButtonProps) {
+  // Base: compact, angular, no transition — desktop-native feel
   const baseStyles =
-    "relative inline-flex items-center justify-center font-body font-medium tracking-wide transition-all disabled:opacity-50 disabled:cursor-not-allowed select-none";
+    "relative inline-flex items-center justify-center font-medium select-none disabled:opacity-40 disabled:cursor-not-allowed";
 
   const variants = {
-    // Solid sapphire — dominant CTA
+    // Gold — primary CTA (Celestial accent)
     primary:
-      "bg-secondary text-secondary-foreground hover:bg-secondary/90",
-    // Muted surface — secondary action
+      "bg-golden text-golden-foreground border border-[#A07800] hover:bg-[#C8A800] active:bg-[#B09000]",
+    // Raised gray button — standard VCL style
     secondary:
-      "bg-muted text-foreground hover:bg-muted/80 border border-border/60",
-    // Bordered — ghost-light
+      "bg-muted text-foreground bevel-raised hover:bg-[#D0CCC4] active:bg-[#B8B4AC] active:bevel-sunken",
+    // Bordered, transparent — outline action
     outline:
-      "border border-foreground/20 bg-transparent hover:border-secondary hover:text-secondary text-foreground",
-    // Invisible until hovered
+      "border border-border bg-card text-foreground hover:bg-muted active:bg-[#B8B4AC]",
+    // No background — toolbar ghost button
     ghost:
-      "text-muted-foreground hover:bg-muted hover:text-foreground",
-    // Danger
+      "bg-transparent text-muted-foreground border border-transparent hover:bg-muted hover:text-foreground hover:border-border",
+    // Danger — destructive action
     destructive:
-      "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+      "bg-destructive text-destructive-foreground border border-[#990000] hover:bg-[#AA0000] active:bg-[#880000]",
   };
 
   const sizes = {
-    sm: "px-4 py-2 text-[11px] tracking-[0.12em]",
-    md: "px-6 py-2.5 text-[12px] tracking-[0.1em]",
-    lg: "px-8 py-4 text-[12px] tracking-[0.12em]",
+    sm: "px-2 py-0.5 text-[11px] gap-1",
+    md: "px-3 py-1 text-[12px] gap-1.5",
+    lg: "px-4 py-1.5 text-[13px] gap-2",
   };
 
-  // Uppercase label treatment — consistent with luxury editorial style
-  const classes = `${baseStyles} uppercase ${variants[variant]} ${sizes[size]} ${className}`;
+  const classes = `${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`;
 
   if (href) {
     return (
-      <motion.div
-        whileTap={{ scale: 0.98 }}
-        className="inline-block"
-      >
-        <Link to={href} target={target} rel={rel} className={classes}>
-          <span className="flex items-center gap-2">{children}</span>
-        </Link>
-      </motion.div>
+      <Link to={href} target={target} rel={rel} className={classes}>
+        <span className="flex items-center gap-1.5">{children}</span>
+      </Link>
     );
   }
 
   return (
-    <motion.button
-      whileTap={{ scale: 0.98 }}
+    <button
       type={type}
       onClick={onClick}
       className={classes}
       disabled={disabled}
     >
-      <span className="flex items-center gap-2">{children}</span>
-    </motion.button>
+      <span className="flex items-center gap-1.5">{children}</span>
+    </button>
   );
 }

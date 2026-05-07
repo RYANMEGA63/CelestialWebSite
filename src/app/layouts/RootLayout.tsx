@@ -24,7 +24,7 @@ export function RootLayout() {
         Home page manages its own top padding internally (hero is full-bleed dark).
         All other pages need a top offset so content isn't hidden behind the header.
       */}
-      <main className={`flex-grow${isHome ? "" : " pt-20"}`}>
+      <main className={`flex-grow${isHome ? "" : " pt-[28px]"}`}>
         <Outlet />
       </main>
       <Footer />

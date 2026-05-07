@@ -155,6 +155,10 @@ export function DbWorkspaceView() {
 
   // ── Roles Management ─────────────────────────────────────────
   const createRole = async () => {
+    if (!isAdmin) {
+      toast.error("Action non autorisée", { description: "Seul un administrateur peut créer des rôles." });
+      return;
+    }
     if (!newRole.name.trim() || !wsId) return;
     try {
       const { data, error } = await supabaseDbAdmin.from("workspace_roles").insert({
@@ -175,6 +179,10 @@ export function DbWorkspaceView() {
   };
 
   const deleteRole = async (id: string, name: string) => {
+    if (!isAdmin) {
+      toast.error("Action non autorisée", { description: "Seul un administrateur peut supprimer des rôles." });
+      return;
+    }
     if (!confirm(`Supprimer le rôle "${name}" ?`)) return;
     try {
       const { error } = await supabaseDbAdmin.from("workspace_roles").delete().eq("id", id);
@@ -187,7 +195,10 @@ export function DbWorkspaceView() {
   };
 
   const assignRoleToMember = async (memberId: string, roleName: string) => {
-    if (!isOwner && !isAdmin) return; // Prevent any unauthorized call
+    if (!isAdmin) {
+      toast.error("Action non autorisée", { description: "Seul un administrateur peut modifier les rôles." });
+      return;
+    }
     const isSelf = memberId === member?.id;
     if (isSelf && !isAdmin) {
       toast.error("Action non autorisée", { description: "Vous ne pouvez pas modifier votre propre rôle." });
@@ -224,6 +235,10 @@ export function DbWorkspaceView() {
   };
 
   const handleAddMember = async () => {
+    if (!isAdmin) {
+      toast.error("Action non autorisée", { description: "Seul un administrateur peut ajouter des membres." });
+      return;
+    }
     if (!wsId || !addMemberEmail.trim()) return;
     const targetUser = allUsers.find((u) => u.email === addMemberEmail.trim());
     if (!targetUser) {
@@ -272,9 +287,13 @@ export function DbWorkspaceView() {
   };
 
   const handleRemoveMember = async (memberId: string, email: string) => {
+    if (!isAdmin) {
+      toast.error("Action non autorisée", { description: "Seul un administrateur peut retirer des membres." });
+      return;
+    }
     const isSelf = memberId === member?.id;
-    if (isSelf && !isAdmin) {
-      toast.error("Non autorisé", { description: "Vous ne pouvez pas retirer votre propre accès." });
+    if (isSelf) {
+      toast.error("Non autorisé", { description: "Vous ne pouvez pas retirer votre propre accès ici." });
       return;
     }
     if (!confirm(`Retirer ${email} du workspace ?`)) return;
@@ -738,15 +757,17 @@ export function DbWorkspaceView() {
                     </h2>
                     <p className="text-xs text-muted-foreground mt-0.5">Gérez les accès utilisateurs de votre espace.</p>
                   </div>
-                  <button 
-                    onClick={() => {
-                      setShowAddMember(true);
-                      setAddMemberRole(authUser?.isAdmin ? "member" : (roles[0]?.name || ""));
-                    }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-primary border border-primary/20 hover:bg-primary/10 transition-colors"
-                  >
-                    <UserPlus className="w-3.5 h-3.5" /> Ajouter
-                  </button>
+                  {authUser?.isAdmin && (
+                    <button 
+                      onClick={() => {
+                        setShowAddMember(true);
+                        setAddMemberRole("member");
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-primary border border-primary/20 hover:bg-primary/10 transition-colors"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" /> Ajouter
+                    </button>
+                  )}
                 </div>
 
                 <div className="grid gap-2">
@@ -790,7 +811,7 @@ export function DbWorkspaceView() {
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0 ml-12 sm:ml-0">
-                          {(!isSelf || authUser?.isAdmin) ? (
+                          {authUser?.isAdmin ? (
                              <select 
                               value={currentRoleValue}
                               onChange={(e) => assignRoleToMember(m.id, e.target.value)}
@@ -814,7 +835,7 @@ export function DbWorkspaceView() {
                             </span>
                           )}
 
-                          {(!isSelf || authUser?.isAdmin) && (
+                          {authUser?.isAdmin && !isSelf && (
                             <button onClick={() => handleRemoveMember(m.id, m.user_email)} className="p-1.5 rounded-lg text-destructive/50 hover:bg-destructive/10 hover:text-destructive transition-all" title="Retirer du workspace">
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -836,12 +857,14 @@ export function DbWorkspaceView() {
                     </h2>
                     <p className="text-xs text-muted-foreground mt-0.5">Créez des rôles sur mesure avec des permissions spécifiques.</p>
                   </div>
-                  <button 
-                    onClick={() => setShowRoleModal(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 text-xs font-bold rounded-lg hover:bg-primary/20 transition-colors"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Créer
-                  </button>
+                  {authUser?.isAdmin && (
+                    <button 
+                      onClick={() => setShowRoleModal(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 text-xs font-bold rounded-lg hover:bg-primary/20 transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Créer
+                    </button>
+                  )}
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-3">
@@ -852,9 +875,11 @@ export function DbWorkspaceView() {
                     </div>
                   ) : roles.map(r => (
                     <div key={r.id} className="p-4 rounded-xl border border-border bg-card relative group flex flex-col hover:border-primary/30 transition-colors">
-                      <button onClick={() => deleteRole(r.id, r.name)} className="absolute top-2 right-2 p-1.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive md:opacity-0 group-hover:opacity-100 transition-all">
-                        <X className="w-4 h-4" />
-                      </button>
+                      {authUser?.isAdmin && (
+                        <button onClick={() => deleteRole(r.id, r.name)} className="absolute top-2 right-2 p-1.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive md:opacity-0 group-hover:opacity-100 transition-all">
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
                       <h4 className="font-black text-sm text-foreground truncate pl-1">{r.name}</h4>
                       <div className="mt-3 space-y-2 text-xs text-muted-foreground bg-muted/30 p-2.5 rounded-lg border border-border/50">
                         {wsFeaturesMessaging && (
